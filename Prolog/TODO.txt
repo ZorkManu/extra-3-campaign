@@ -1,0 +1,8 @@
+TODO:
+- End/Startcutscene
+- Base ein wenig nach vorne wegen Kanonen
+
+Achieves:
+- Ohne Verstärkung
+- Sturmbach killen
+- Kein Dmg bei erebos
