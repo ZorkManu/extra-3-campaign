@@ -1,4 +1,5 @@
 NEVASSA_REACHED = false
+NEVASSA_TAKEN = false
 
 function pillageMinesQuest()
     GUI.CreateMinimapMarker(GetPosition("mine1").X,GetPosition("mine1").Y,2)
@@ -30,6 +31,16 @@ function checkInRange()
     if AreEnemiesInArea( 2, GetPosition("defYuki"), 6000) then
         BriefingDefenseNevassa()
         Explore.Show("battlefield", "exploreDef", 6000)
+        return true
+    end
+end
+
+function timerIslandAttack()
+    if NEVASSA_REACHED then
+        return true
+    end
+    if Counter.Tick2("timerIslandAttack", 300) then
+        Defeat()
         return true
     end
 end
@@ -92,6 +103,7 @@ function startTownFight()
     SetHostile(3,7)
     SetPlayerName(3, "Geistertruppen")
     SetPlayerName(5, "Nebelvolk")
+    SetPlayerName(6, "???")
     SetPlayerName(7, "Verbündete")
     DestroyEntity(GetEntityId("southGate1"))
     DestroyEntity(GetEntityId("southGate2"))
@@ -101,6 +113,8 @@ function startTownFight()
     createTownAttacker()
     createTownDefender()
     BriefingInvasionWon()
+    Logic.RemoveTribute(1,SILVERTRIBUTE)
+    Logic.RemoveTribute(1,IRONTRIBUTE)
     StartSimpleJob("reachNevassa")
     StartSimpleJob("checkForAttackers")
 end
@@ -121,6 +135,7 @@ function checkForAttackers()
 end
 
 function endTownFight()
+    SetHostile(1,6)
     SetFriendly(1,2)
     local yukipos = GetPosition("Yuki")
     DestroyEntity(GetEntityId("Yuki"))
@@ -128,6 +143,7 @@ function endTownFight()
     Explore.Hide("explreeinf")
     Logic.ChangeAllEntitiesPlayerID(2, 1)
     Logic.SetShareExplorationWithPlayerFlag(1, 7, 1)
+    GUI.CreateMinimapMarker(GetPosition("sulfurBase").X,GetPosition("sulfurBase").Y,2)
     SetFriendly(1,7)
     ResearchTechnology(Technologies.GT_Construction, 1)
     ResearchTechnology(Technologies.GT_GearWheel, 1)
@@ -140,14 +156,23 @@ function endTownFight()
     ResearchTechnology(Technologies.T_UpgradeSword2)
     ResearchTechnology(Technologies.T_UpgradeBow1)
     ResearchTechnology(Technologies.T_UpgradeBow2)
+    AddPeriodicSummer(CYCLELENGTH)
     createOneTimeGhostAttacker()
     BriefingEndTownFight()
     CreateNPC {
         name = "alchemist",
         callback = BriefingSulfurBase,
-        heroName = "Yuki"
     }
     initErebos()
+    StartSimpleJob("checkForLighthouse")
+    lighthouseNPC()
+    initBoatsmanQuest()
+    StartSimpleJob("uprisingQuestMotivationCheck")
+end
+
+function startGhostJobs()
+    StartSimpleJob("checkForNight")
+    StartSimpleJob("killGhosts")
 end
 
 function initErebos()
@@ -155,7 +180,7 @@ function initErebos()
         ChangePlayer("ere"..i,2)
         Logic.GroupStand(GetEntityId("ere" .. i))
     end
-    StartSimpleJob("checkNVEntrance")
+    --StartSimpleJob("checkNVEntrance")
     StartSimpleJob("checkErebos")
 end
 
@@ -171,28 +196,24 @@ end
 function checkErebos()
     for i = 1, 5 do
         if AreEnemiesInArea(5,GetPosition("ere" .. i),1500) then
-            Message("Yuki: Schaut so aus als könnten wir hier nicht weiter, das sieht schmerzhaft aus.")
+            Message("Yuki: Besser nähern wir uns dem nicht in der Nacht, der tötet dann alles was ihm in die Quere kommt.")
             return true
         end
     end
 end
 
 function churchQuest()
-    for i = 6, 9 do
+    for i = 4, 9 do
         initNVAttackSpawner(i, "nv" .. i)
-        initNVDefenseSpawner(i, "nv" .. i)
     end
-    MapEditor_Armies[6].offensiveArmies.strength = 10 + Difficulty*4
-    MapEditor_Armies[6].defensiveArmies.strength = 20 + Difficulty*4
+    MapEditor_Armies[6].offensiveArmies.strength = 8 + Difficulty*3
+    MapEditor_Armies[6].defensiveArmies.strength = 12 + Difficulty*3
     Logic.ChangeAllEntitiesPlayerID(7, 1)
-    AddPeriodicSummer(10 * 60)
-    AddPeriodicWinter(2 * 60)
     StartSimpleJob("checkForGrid")
     StartSimpleJob("checkKey")
     CreateNPC {
         name = "monk",
         callback = BriefingMonk,
-        heroName = "Yuki"
     }
 end
 
@@ -223,7 +244,6 @@ function checkAlchemistMove()
         CreateNPC {
             name = "alchemist",
             callback = BriefingAlchemist,
-            heroName = "Yuki"
         }
         return true
     end
@@ -261,7 +281,10 @@ end
 
 function monasteryDefenseSuccess()
     BriefingDefenseSuccess()
+    AddPeriodicNight(999999)
     StartSimpleJob("checkForFinalTribute")
+    StartSimpleJob("checkAlchemistMove")
+    GUI.CreateMinimapMarker(GetPosition("p6hq").X,GetPosition("p6hq").Y,2)
 end
 
 function checkForFinalTribute()
@@ -295,17 +318,19 @@ function TributeEndgameBarrier()
 end
 
 function CallbackEndgameTribute()
-    DestroyEntity("wall1")
-    DestroyEntity("wall2")
-    DestroyEntity("wall3")
-    SetHostile(1,6)
+    for i = 1, 3 do
+        Logic.CreateEffect(GGL_Effects.FXExplosion, GetPosition("wall" .. i).X, GetPosition("wall" .. i).Y, 1)
+        DestroyEntity("wall" .. i)
+    end
+    Sound.PlayGUISound( Sounds.Military_SO_Cannon_rnd_1 , 100 )
     StartSimpleJob("victoryCondition")
 end
 
 function victoryCondition()
     if Counter.Tick2("victoryCondition",10) then
         if AI.Player_GetNumberOfLeaders(6) == 0 and IsDead("p6hq") then
-            StartSimpleJob("victoryCheck")
+            BriefingMaryDestroyed()
+            GUI.DestroyMinimapPulse(GetPosition("p6hq").X,GetPosition("p6hq").Y,2)
             return true
         end
     end

@@ -1,11 +1,10 @@
 function initVillageDefs()
-    MapEditor_SetupAI(2, 1, 13000, 1, "fleeingsp2", 0, 0)
+    MapEditor_SetupAI(2, 1, 13000, 1, "p2cavspawn", 0, 0)
 	SetupPlayerAi( 2, {serfLimit = 0} )
     MapEditor_Armies[2].offensiveArmies.strength = 14
     MapEditor_Armies[2].defensiveArmies.strength = 0
     MapEditor_Armies[2].description.rebuildData.delay = 999999
     table.insert(MapEditor_Armies[2].ForbiddenTypes, UpgradeCategories.LeaderCavalry)
-    SetHostile(2,3)
     SetHostile(2,4)
     MapEditor_SetupAI(5, 2, 3000, 2, "village1", 0, 0)
 	SetupPlayerAi( 5, {serfLimit = 0} )
@@ -26,7 +25,7 @@ function initVillageDefs()
     MapEditor_Armies[7].offensiveArmies.strength = 10
     MapEditor_Armies[7].defensiveArmies.strength = 0
     MapEditor_Armies[7].description.rebuildData.delay = 999999
-    table.insert(MapEditor_Armies[7].ForbiddenTypes, UpgradeCategories.Cannon4)
+    table.insert(MapEditor_Armies[7].ForbiddenTypes, Entities.PV_Cannon4)
     ResearchTechnology(2,Technologies.T_Masonry)
     ResearchTechnology(5,Technologies.T_Masonry)
     ResearchTechnology(6,Technologies.T_Masonry)
@@ -77,6 +76,7 @@ function armyDefP6(_pos)
     end
 
     Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyDefendP6" , 1, {}, {CONST_ARMY_INDEX,1})
+    Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "changeDefSpotP6P7" , 1, {}, {CONST_ARMY_INDEX})
     CONST_ARMY_INDEX = CONST_ARMY_INDEX + 1
     end
 
@@ -114,11 +114,22 @@ function armyDefP6(_pos)
     end
 
     Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyDefendP6" , 1, {}, {CONST_ARMY_INDEX,2})
+    Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "changeDefSpotP6P7" , 1, {}, {CONST_ARMY_INDEX})
     CONST_ARMY_INDEX = CONST_ARMY_INDEX + 1
     end
 end
 
+function changeDefSpotP6P7(_id)
+    if VILLAGESTATUS[6] == 3 then
+        Redeploy(Armies[_id],GetPosition("towndefmiddle"))
+        return true
+    end
+end
+
 function changDefSpotP6(_id, _pos)
+    if LASTWAVE == true then
+        return true
+    end
     if IsDead(Armies[_id]) then
         return true
     end
@@ -139,11 +150,13 @@ function controlArmyDefendP6(_id,_pos)
         if IsDead("p6hq") then
             return true
         end
-        if _pos == 1 then
-            StartSimpleJob("waitForRespawnDefP6Left")
-            return true
+        if LASTWAVE == false then
+            if _pos == 1 then
+                StartSimpleJob("waitForRespawnDefP6Left")
+                return true
+            end
+            StartSimpleJob("waitForRespawnDefP6Right")
         end
-        StartSimpleJob("waitForRespawnDefP6Right")
         return true
     end
     Defend(Armies[_id])
@@ -164,6 +177,9 @@ function waitForRespawnDefP6Right()
 end
 
 function checkDefPointP5()
+    if VILLAGESTATUS[5] == 3 then
+        return true
+    end
     if IsDead("barracksp51") then
         ChangePlayer("barracksp52",5)
         MapEditor_Armies[5].offensiveArmies.strength = 10

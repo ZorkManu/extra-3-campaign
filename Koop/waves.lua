@@ -6,9 +6,9 @@ BOSSWAVES = {
 }
 
 BREAK = {
-    1800,
-    3000,
-    4200
+    1600,
+    2800,
+    4000
 }
 
 PLAYERWAYPOINTS = {
@@ -45,36 +45,47 @@ function Waves()
             ChangePlayer("serf1",1)
             ChangePlayer("serf2",2)
             ChangePlayer("serf3",3)
+        else
+            Message("Die Dorfhallen sind nun zum Verkauf erhältlich!")
+            TributeVillageHalls()
         end
-    end
-    if TICK == BOSSWAVES[2] then
-        Message("Die Dorfhallen sind nun zum Verkauf erhältlich!")
-        TributeVillageHalls()
     end
     if (TICK ~= 0) and (TICK < BOSSWAVES[1]) or (TICK < BOSSWAVES[2] and TICK > BREAK[1]) or (TICK < BOSSWAVES[3] and TICK > BREAK[2]) or (TICK > BREAK[3]) then
         WavesP1()
-        WavesP2()
-        WavesP3()
+        if secondplayeractive == 1 then
+            WavesP2()
+        end
+        if thirdplayeractive == 1 then
+            WavesP3()
+        end
         if fourthplayeractive == 1 then
             WavesP4()
         end
     end
     if TICK == BOSSWAVES[1] then
         createNVBossWave1()
-        createNVBossWave2()
-        createNVBossWave3()
+        if secondplayeractive == 1 then
+            createNVBossWave2()
+        end
+        if thirdplayeractive == 1 then
+            createNVBossWave3()
+        end
         createNVBossWave4()
         NVACTIVE = 1
     elseif TICK == BOSSWAVES[2] then
         local wtype = Logic.GetWeatherState()
         Logic.AddWeatherElement(wtype, 300, 0, NighttimeGFXSets[wtype][1], 5, 15)
         createSpecialUnitBossWave1()
-        createSpecialUnitBossWave2()
-        createSpecialUnitBossWave3()
+        if secondplayeractive == 1 then
+            createSpecialUnitBossWave2()
+        end
+        if thirdplayeractive == 1 then
+            createSpecialUnitBossWave3()
+        end
         createSpecialUnitBossWave4()
         SPECIALSACTIVE = 1
         BOSSFIGHT2 = true
-        Sound.StartMusic( LocalMusic.MusicPath .. LocalMusic.Bossfight2[1][1], LocalMusic.Bossfight2[1][2])
+        Sound.StartMusic( LocalMusic.MusicPathBoss .. LocalMusic.Bossfight2[1][1], LocalMusic.Bossfight2[1][2])
         Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "tickBossCounter" , 1, {}, {2})
     elseif TICK == BOSSWAVES[3] then
         Display.GfxSetSetLightParams(30,  0.0, 1.0, 40, -15, -50,  120,90,80,  81,21,21)
@@ -84,7 +95,7 @@ function Waves()
         createNVWaveP4()
         createTownBossWave()
         BOSSFIGHT3 = true
-        Sound.StartMusic( LocalMusic.MusicPath .. LocalMusic.Bossfight3[1][1], LocalMusic.Bossfight3[1][2])
+        Sound.StartMusic( LocalMusic.MusicPathBoss .. LocalMusic.Bossfight3[1][1], LocalMusic.Bossfight3[1][2])
         Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "tickBossCounter" , 1, {}, {3})
     elseif TICK == BOSSWAVES[4] then
         Display.GfxSetSetLightParams(30,  0.0, 1.0, 40, -15, -50,  30,60,90,  20,60,81)
@@ -92,7 +103,7 @@ function Waves()
         local wtype = Logic.GetWeatherState()
         Logic.AddWeatherElement(wtype, 364, 0, 30, 5, 15)
         BOSSFIGHT4 = true
-        Sound.StartMusic( LocalMusic.MusicPath .. LocalMusic.Bossfight4[1][1], LocalMusic.Bossfight4[1][2])
+        Sound.StartMusic( LocalMusic.MusicPathBoss .. LocalMusic.Bossfight4[1][1], LocalMusic.Bossfight4[1][2])
         Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "tickBossCounter" , 1, {}, {4})
         createLastBossWave()
         return true
@@ -102,7 +113,7 @@ function Waves()
 end
 
 function WavesP1()
-    if Modulo(math.max(1,TICK-15),300-Difficulties[1]*30) == 0 then
+    if Modulo(math.max(1,TICK-15),200) == 0 then
         if SPECIALSACTIVE == 1 then
             for i = 1, Difficulties[1] do
                 if math.random(1,6) == 6 then
@@ -124,7 +135,7 @@ function WavesP1()
 end
 
 function WavesP2()
-    if Modulo(math.max(1,TICK-5),300-Difficulties[2]*30) == 0 then
+    if Modulo(math.max(1,TICK-5),200) == 0 then
         if SPECIALSACTIVE == 1 then
             for i = 1, Difficulties[2] do
                 if math.random(1,6) == 6 then
@@ -146,7 +157,7 @@ function WavesP2()
 end
 
 function WavesP3()
-    if Modulo(math.max(1,TICK+15),300-Difficulties[3]*30) == 0 then
+    if Modulo(math.max(1,TICK+15),200) == 0 then
         if SPECIALSACTIVE == 1 then
             for i = 1, Difficulties[3] do
                 if math.random(1,6) == 6 then
@@ -168,7 +179,7 @@ function WavesP3()
 end
 
 function WavesP4()
-    if Modulo(math.max(1,TICK-30),300-Difficulties[4]*30) == 0 then
+    if Modulo(math.max(1,TICK-30),200) == 0 then
         if SPECIALSACTIVE == 1 then
             for i = 1, Difficulties[4] do
                 if math.random(1,6) == 6 then

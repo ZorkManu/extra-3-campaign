@@ -2,6 +2,7 @@ CURRENTNECROPOS = {}
 ARMORQUESTSTARTED = false
 KERBEROSUPGRADED = false
 BANDITQUESTSTARTED = false
+SCOUTCHECK = 1
 
 function initKerberosArmorSideQuest()
     StartSimpleJob("teleportInTower")
@@ -9,71 +10,49 @@ function initKerberosArmorSideQuest()
 end
 
 function teleportInTower()
-    if IsNear("Kerberos", "TowerEntrance", 200) then
+    if IsNear("Kerberos", "TowerEntrance", 400) then
         local teleportPosOut = GetPosition("NecroSp1")
         SetPosition("Kerberos", teleportPosOut)
         if ARMORQUESTSTARTED == false then
             StartSimpleJob("checkStatue")
         end
     end
-    local FirstLeaderID = Logic.GetNextLeader(1, 0)
-    local CurrentLeaderID = FirstLeaderID
-    local tpKardinel = false
-    repeat
-        if CurrentLeaderID ~= 0 then
-        if IsNear(CurrentLeaderID, "TowerEntrance", 200) then
+    if IsNear("Kardinel", "TowerEntrance", 400) then
+        DestroyEntity(GetEntityId("Kardinel"))
+        DestroyEntity(GetEntityId("Feuerzahn"))
+        createKardinel("NecroSp1")
+    end
+    local leaderIds = GetPlayerLeaderIds(1)
+    for i = 1, table.getn(leaderIds) do
+        local currentLeaderId = leaderIds[i]
+        if IsNear(currentLeaderId, "TowerEntrance", 400) then
             local teleportPosOut = GetPosition("NecroSp1")
-                if CurrentLeaderID == GetEntityId("Kardinel") then
-                    DestroyEntity(GetEntityId("Kardinel"))
-                    DestroyEntity(GetEntityId("Feuerzahn"))
-                    createKardinel("NecroSp1")
-                    tpKardinel = true
-                else
-                    SetPosition(CurrentLeaderID, teleportPosOut)
-                end
-            end
+            SetPosition(currentLeaderId, teleportPosOut)
         end
-        if tpKardinel == false then
-            CurrentLeaderID = Logic.GetNextLeader(1,CurrentLeaderID)
-        else
-            tpKardinel = false
-        end
-    until FirstLeaderID == CurrentLeaderID
-
+    end
     if ESCAPEDCASTLE or KERBEROSUPGRADED then
         return true
     end
 end
 
 function teleportOutTower()
-    if IsNear("Kerberos", "TowerExit", 200) then
+    if IsNear("Kerberos", "TowerExit", 400) and ARMORQUESTSTARTED == true then
         local teleportPosOut = GetPosition("TowerEntranceBack")
-        TeleportSettler(GetEntityId("Kerberos"), teleportPosOut.X,teleportPosOut.Y)
+        SetPosition("Kerberos", teleportPosOut)
     end
-    local FirstLeaderID = Logic.GetNextLeader(1, 0)
-    local CurrentLeaderID = FirstLeaderID
-    local tpKardinel = false
-    repeat
-        if CurrentLeaderID ~= 0 then
-            if IsNear(CurrentLeaderID, "TowerExit", 200) then
+    if IsNear("Kardinel", "TowerExit", 400) then
+        DestroyEntity(GetEntityId("Kardinel"))
+        DestroyEntity(GetEntityId("Feuerzahn"))
+        createKardinel("TowerEntranceBack")
+    end
+    local leaderIds = GetPlayerLeaderIds(1)
+    for i = 1, table.getn(leaderIds) do
+        local currentLeaderId = leaderIds[i]
+        if IsNear(currentLeaderId, "TowerExit", 400) then
             local teleportPosOut = GetPosition("TowerEntranceBack")
-                if CurrentLeaderID == GetEntityId("Kardinel") then
-                    TeleportSettler(GetEntityId("Kardinel"),teleportPosOut.X,teleportPosOut.Y)
-                    TeleportSettler(GetEntityId("Feuerzahn"),teleportPosOut.X,teleportPosOut.Y)
-                    tpKardinel = true
-                else
-                    TeleportSettler(CurrentLeaderID, teleportPosOut.X,teleportPosOut.Y)
-                    CurrentLeaderID = Logic.GetNextLeader(1,CurrentLeaderID)
-                end
-            end
+            SetPosition(currentLeaderId, teleportPosOut)
         end
-        if tpKardinel == false then
-            CurrentLeaderID = Logic.GetNextLeader(1,CurrentLeaderID)
-        else
-            tpKardinel = false
-        end
-    until FirstLeaderID == CurrentLeaderID
-
+    end
     if ESCAPEDCASTLE or KERBEROSUPGRADED and AreEntitiesInArea( 1, 0, GetPosition("KerberosMovePoint"), 4000, 1) == false then
         return true
     end
@@ -114,7 +93,7 @@ function haltKerberos()
 end
 
 function controlNecroArmorQuest(_NecroNo)
-    Logic.SetEntityScriptingValue(GetEntityId("Necro" .. _NecroNo),72,1)
+    --Logic.SetEntityScriptingValue(GetEntityId("Necro" .. _NecroNo),72,1)
     CUtil.SetEntityDisplayName(GetEntityId("Necro" .. _NecroNo), "Nekromant")
     if IsDead("Necro" .. _NecroNo) or KERBEROSUPGRADED then
         DestroyEntity(GetEntityId("Necro" .. _NecroNo))
@@ -151,6 +130,22 @@ function checkForBootsChest()
     end
 end
 
+function banditBroNPC()
+    local NPC = {
+        name = "banditBro",
+        callback = BriefingBanditBro
+    }
+    CreateNPC(NPC)
+end
+
+function scoutP5NPC()
+    local NPC = {
+        name = "p5scout",
+        callback = BriefingScoutP5
+    }
+    CreateNPC(NPC)
+end
+
 function createBanditDefArmy()
     Armies[CONST_ARMY_INDEX] = {
         player = 2,
@@ -185,6 +180,10 @@ end
 function controlArmyDefendAndSwap(_id)
     if IsDead(Armies[_id]) then
         Explore.Hide("explBandits")
+        local pos = GetPosition("banditSpawn")
+        GUI.DestroyMinimapPulse(pos.X,pos.Y)
+        local pos = GetPosition("explBanditAttack")
+        GUI.DestroyMinimapPulse(pos.X,pos.Y)
         return true
     end
     if BANDITQUESTSTARTED == true then
@@ -199,9 +198,28 @@ function controlArmyDefendAndSwap(_id)
                     ChangePlayer(Armies[_id].IDs[1],1)
                 end
                 Explore.Hide("explBandits")
+                local pos = GetPosition("banditSpawn")
+                GUI.DestroyMinimapPulse(pos.X,pos.Y)
+                local pos = GetPosition("explBanditAttack")
+                GUI.DestroyMinimapPulse(pos.X,pos.Y)
+                Sound.PlayGUISound(Sounds.VoicesLeader_LEADER_Yes_rnd_01, 200)
                 return true
             end
         end
     end
     Defend(Armies[_id])
+end
+
+function checkForScout()
+    if IsDead("p5scout") then
+        SCOUTCHECK = 3
+        return true
+    end
+end
+
+function checkForStatue()
+    if IsNear("Kerberos","dariostatue", 1500) then
+        BriefingStatue()
+        return true
+    end
 end

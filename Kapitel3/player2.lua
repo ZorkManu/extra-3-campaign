@@ -3,11 +3,11 @@ P2PatrolArmies = 6
 function createPlayer2()
     local pID = 2
     local strength = 3
-    local range = 10000
+    local range = 12000
     MapEditor_SetupAI(pID, strength, range, 3, "p2base", 3, 0)
 	SetupPlayerAi( pID, {constructing = false, extracting = true, repairing = true, serfLimit = 12} )
 
-    Tools.GiveResouces(2, 100000 , 0, 120000, 0, 200000, 100000)
+    Tools.GiveResouces(2, 100000 , 0, 120000, 0, 100000, 100000)
 
     local lowerBarracksID = GetEntityId("p2barracks")
     MapEditor_Armies[pID].armies[lowerBarracksID] = {
@@ -16,7 +16,7 @@ function createPlayer2()
             strength	= 2,
             position = GetPosition("p2barracksspawn"),
             enemySearchPosition = GetPosition("ghostsulfurbase"),
-            rodeLength = 20000,
+            rodeLength = 21000,
             baseDefenseRange = (range*2)/3,
             AttackAllowed =	true,
             baitDetection = false,
@@ -37,7 +37,7 @@ function createPlayer2()
     local miliaryBaseIDs = {
         [GetEntityId("barrackstop")] =  GetPosition("uppergate"),
         [GetEntityId("barracksbottom")] =  GetPosition("bottomgate"),
-        [GetEntityId("barrackmiddle")] =  GetPosition("frontgate"),
+        [GetEntityId("barracksmiddle")] =  GetPosition("frontgatebehind"),
         [GetEntityId("archerytop")] =  GetPosition("uppergate"),
         [GetEntityId("archerybottom")] =  GetPosition("bottomgate"),
         [GetEntityId("archerymiddletop")] =  GetPosition("frontgate"),

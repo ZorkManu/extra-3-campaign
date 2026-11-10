@@ -1,4 +1,5 @@
 ARENA_OCCUPIED = false
+SHAGTALKED = false
 
 function initWinkelhainNPCs()
     local NPC = {
@@ -57,11 +58,9 @@ function createArenaFighter(_arenafight)
     DestroyEntity(GetEntityId("Ari"))
     DestroyEntity(GetEntityId("Schwarz"))
     CreateMilitaryGroup(1, Entities.PU_Hero5, 0, GetPosition("AriArena"), "Ari")
-    CreateMilitaryGroup(1, Entities.CU_VeteranCaptain, 0, GetPosition("SchwarzArena"), "Schwarz")
-    StartCountdown(1, function ()
-        Logic.SetEntityScriptingValue(GetEntityId("Schwarz"),72,1)
-        CUtil.SetEntityDisplayName(GetEntityId("Schwarz"), "Schwarz")
-    end, false)
+    CreateMilitaryGroup(1, Entities.PU_Hero_Bandit, 0, GetPosition("SchwarzArena"), "Schwarz")
+    --Logic.SetEntityScriptingValue(GetEntityId("Schwarz"),72,1)
+    CUtil.SetEntityDisplayName(GetEntityId("Schwarz"), "Schwarz")
     SetHostile(1,7)
 
     if _arenafight == 1 then
@@ -80,11 +79,9 @@ function isArenaFighterRemaining(_arenafight)
         DestroyEntity(GetEntityId("Ari"))
         DestroyEntity(GetEntityId("Schwarz"))
         CreateMilitaryGroup(1, Entities.PU_Hero5, 0, GetPosition("AriArenaExit"), "Ari")
-        CreateMilitaryGroup(1, Entities.CU_VeteranCaptain, 0, GetPosition("SchwarzArenaExit"), "Schwarz")
-        StartCountdown(1, function ()
-            Logic.SetEntityScriptingValue(GetEntityId("Schwarz"),72,1)
-            CUtil.SetEntityDisplayName(GetEntityId("Schwarz"), "Schwarz")
-        end, false)
+        CreateMilitaryGroup(1, Entities.PU_Hero_Bandit, 0, GetPosition("SchwarzArenaExit"), "Schwarz")
+        --Logic.SetEntityScriptingValue(GetEntityId("Schwarz"),72,1)
+        CUtil.SetEntityDisplayName(GetEntityId("Schwarz"), "Schwarz")
         SetNeutral(1,7)
         SetNeutral(7,1)
         createArena1()
@@ -103,11 +100,9 @@ function isArenaFighterRemaining(_arenafight)
         SetNeutral(1,7)
         SetNeutral(7,1)
         CreateMilitaryGroup(1, Entities.PU_Hero5, 0, GetPosition("AriArenaExit"), "Ari")
-        CreateMilitaryGroup(1, Entities.CU_VeteranCaptain, 0, GetPosition("SchwarzArenaExit"), "Schwarz")
-        StartCountdown(1, function ()
-            Logic.SetEntityScriptingValue(GetEntityId("Schwarz"),72,1)
-            CUtil.SetEntityDisplayName(GetEntityId("Schwarz"), "Schwarz")
-        end, false)
+        CreateMilitaryGroup(1, Entities.PU_Hero_Bandit, 0, GetPosition("SchwarzArenaExit"), "Schwarz")
+        --Logic.SetEntityScriptingValue(GetEntityId("Schwarz"),72,1)
+        CUtil.SetEntityDisplayName(GetEntityId("Schwarz"), "Schwarz")
         createArena1()
         createArena2()
         if _arenafight == 1 then
@@ -200,10 +195,24 @@ function ironMinePayed()
     end
 end
 
+function moveShagsworthQuest()
+    if IsNear("Shagsworth","ShagsworthClay",200) and IsNear("Scoob","ScoobClay",200) then
+        CreateMilitaryGroup(2, Entities.CU_SettlerIdle, 0, GetPosition("WitnessSpawn"), "Will")
+        local NPC = {
+            name = "Shagsworth",
+            callback = BriefingVillagerMaulwurfUpdate
+        }
+        CreateNPC(NPC)
+        return true
+    end
+    Move("Shagsworth","ShagsworthClay")
+    Move("Scoob","ScoobClay")
+end
+
 function moveShagsworthCamp()
     if IsNear("Shagsworth","shagsworthPos",200) and IsNear("Scoob","scoobPos",200) then
-        LookAt("Shagsworth","campShagsworth")
-        LookAt("Scoob","campShagsworth")
+        LookAt("Shagsworth","AriCampsite")
+        LookAt("Scoob","SchwarzCampsite")
         local NPC = {
             name = "Shagsworth",
             callback = BriefingShagsworthQuest
@@ -212,7 +221,40 @@ function moveShagsworthCamp()
         return true
     end
     Move("Shagsworth","shagsworthPos")
-    Move("Scoob","campShagsworth")
+    Move("Scoob","scoobPos")
+end
+
+function checkForPrisonGhost()
+    local ghostPrison = GetPosition("ghostPrison")
+    local foundEntities = { Logic.GetPlayerEntitiesInArea(6,nil,ghostPrison.X,ghostPrison.Y,200) }
+    if foundEntities[1] > 0 then
+        local foundMoreEntities = { Logic.GetPlayerEntitiesInArea(6,nil,ghostPrison.X,ghostPrison.Y,400) }
+        for i in pairs(foundEntities) do
+            if i > 1 then
+                local entity = foundEntities[i]
+                ChangePlayer(entity,8)
+            end
+        end
+        local fence = GetPosition("Fence")
+        Logic.CreateEntity( Entities.XD_IronGrid2, fence.X, fence.Y, 14 , 0 )
+        TeleportSettler(GetEntityId("Ari"),GetPosition("AriCampsite").X,GetPosition("AriCampsite").Y)
+        if IsDead("Schwarz") == false then
+            TeleportSettler(GetEntityId("Schwarz"),GetPosition("SchwarzCampsite").X,GetPosition("SchwarzCampsite").Y)
+        end
+        BriefingGhostImprisoned()
+        GUI.DestroyMinimapPulse(ghostPrison.X,ghostPrison.Y)
+        SetHostile(4,6)
+        return true
+    end
+end
+
+function initSturmbachNPCs()
+    local NPC = {
+        name = "p3_Scolar",
+        heroName = "Ari",
+        callback = BriefingP3Scolar
+    }
+    CreateNPC(NPC)
 end
 
 function initLightHouseQuest()

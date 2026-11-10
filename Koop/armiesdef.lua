@@ -140,7 +140,7 @@ function createGhostPilgrimArmy()
     CEntity.SetArmor(pilgrimId,20)
     ConnectLeaderWithArmy(pilgrimId,Armies[CONST_ARMY_INDEX])
 
-    for i = 1, Difficulty * 5 do
+    for i = 1, Difficulty * 6 do
         troopDescription.leaderType = Entities.PU_LeaderSword4_Spectral
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
@@ -179,7 +179,7 @@ function createGhostAriArmy()
     CEntity.SetArmor(ariId,20)
     ConnectLeaderWithArmy(ariId,Armies[CONST_ARMY_INDEX])
 
-    for i = 1, Difficulty * 5 do
+    for i = 1, Difficulty * 6 do
         troopDescription.leaderType = Entities.PU_LeaderSword4_Spectral
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
@@ -218,12 +218,12 @@ function createGhostDrakeArmy()
     CEntity.SetArmor(drakeId,20)
     ConnectLeaderWithArmy(drakeId,Armies[CONST_ARMY_INDEX])
 
-    for i = 1, Difficulty * 10 + 25 do
+    for i = 1, Difficulty * 14 + 25 do
         troopDescription.leaderType = Entities.PU_LeaderRifle1_Spectral
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
 
-    for i = 1, Difficulty * 10 + 20 do
+    for i = 1, Difficulty * 14 + 20 do
         troopDescription.leaderType = Entities.PU_LeaderBow1_Spectral
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end

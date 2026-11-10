@@ -1,6 +1,8 @@
 KERBEROSHASKEY = false
 ESCAPEDCASTLE = false
 BKNUMBER = 0
+LASTWAVE = false
+HOLDOUT = false
 ALIVEWORKERS = {}
 VILLAGEEMPTY = {}
 WORKERSESCAPED = 0
@@ -23,15 +25,20 @@ VILLAGESTATUS = {
     [7] = 0
 }
 
+VILLAGENAMES = {
+    [2] = "Finsterwald",
+    [5] = "Altea",
+    [6] = "Sonnspitz",
+    [7] = "Südfang"
+}
+
 
 function initDungeoncrawler()
     local markerPos = GetPosition("closedindoorgate")
     GUI.CreateMinimapMarker(markerPos.X,markerPos.Y,2)
     Explore.Show("explclosedgate", "closedindoorgate", 500)
-    StartCountdown(1, function ()
-        Logic.SetEntityScriptingValue(GetEntityId("Necro"),72,1)
-	    CUtil.SetEntityDisplayName(GetEntityId("Necro"), "Nekromant")
-    end, false)
+    --Logic.SetEntityScriptingValue(GetEntityId("Necro"),72,1)
+	CUtil.SetEntityDisplayName(GetEntityId("Necro"), "Nekromant")
     Logic.GroupStand(GetEntityId("Necro"))
     StartSimpleJob("checkForPrisonDoor")
     StartSimpleJob("checkNearPantryDoor")
@@ -40,6 +47,28 @@ function initDungeoncrawler()
     for i = 1, 3 do
         Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "nearUnit" , 1, {}, {"BK" .. i})
     end
+end
+
+function checkForStartArmies()
+    if IsDead("Mary") then
+        DestroyEntity("Mary")
+        for i in pairs(StartingArmies) do
+            if IsDead(StartingArmies[i]) == false then
+                return false
+            end
+        end
+        CreateMilitaryGroup(8, Entities.CU_Mary_de_Mortfichet, 0, GetPosition("armyStart2"), "Mary")
+        BriefingFirstBattleDone()
+        return true
+    end
+end
+
+function moveMaryOut()
+    if IsNear("Mary","armyBlood",200) then
+        DestroyEntity(GetEntityId("Mary"))
+        return true
+    end
+    Move("Mary","armyBlood")
 end
 
 function checkNearPantryDoor()
@@ -152,6 +181,9 @@ end
 
 function checkNearDefBlackKnights()
     if AreEntitiesInArea( 1, 0, GetPosition("HallWayCheck1"), 1000, 1) or AreEntitiesInArea( 1, 0, GetPosition("HallWayCheck2"), 1000, 1) or AreEntitiesInArea( 1, 0, GetPosition("HallWayCheck3"), 1000, 1) then
+        for i = 1,3 do
+            ChangePlayer("BK" .. i,2)
+        end
         createArmnyAttackBlackKnights()
         return true
     end
@@ -174,18 +206,17 @@ function checkEntranceTP()
         local teleportPosOut = GetPosition("doorCheck3")
         SetPosition("Kerberos", teleportPosOut)
     end
+    if IsNear("Kardinel", "blocking", 700) then
+        DestroyEntity(GetEntityId("Kardinel"))
+        DestroyEntity(GetEntityId("Feuerzahn"))
+        createKardinel("doorCheck3")
+    end
     local leaderIds = GetPlayerLeaderIds(1)
     for i = 1, table.getn(leaderIds) do
         local currentLeaderId = leaderIds[i]
         if IsNear(currentLeaderId, "blocking", 700) then
             local teleportPosOut = GetPosition("doorCheck3")
-            if currentLeaderId == GetEntityId("Kardinel") then
-                DestroyEntity(GetEntityId("Kardinel"))
-                DestroyEntity(GetEntityId("Feuerzahn"))
-                createKardinel("doorCheck3")
-            else
-                SetPosition(currentLeaderId, teleportPosOut)
-            end
+            SetPosition(currentLeaderId, teleportPosOut)
         end
     end
 end
@@ -206,29 +237,19 @@ function teleportInCave()
         local teleportPosOut = GetPosition("CaveInterior")
         SetPosition("Kerberos", teleportPosOut)
     end
-    local FirstLeaderID = Logic.GetNextLeader(1, 0)
-    local CurrentLeaderID = FirstLeaderID
-    local tpKardinel = false
-    repeat
-        if CurrentLeaderID ~= 0 then
-        if IsNear(CurrentLeaderID, "CaveEntrance", 400) then
+    if IsNear("Kardinel", "CaveEntrance", 400) then
+        DestroyEntity(GetEntityId("Kardinel"))
+        DestroyEntity(GetEntityId("Feuerzahn"))
+        createKardinel("CaveInterior")
+    end
+    local leaderIds = GetPlayerLeaderIds(1)
+    for i = 1, table.getn(leaderIds) do
+        local currentLeaderId = leaderIds[i]
+        if IsNear(currentLeaderId, "CaveEntrance", 400) then
             local teleportPosOut = GetPosition("CaveInterior")
-                if CurrentLeaderID == GetEntityId("Kardinel") then
-                    DestroyEntity(GetEntityId("Kardinel"))
-                    DestroyEntity(GetEntityId("Feuerzahn"))
-                    createKardinel("CaveInterior")
-                    tpKardinel = true
-                else
-                    SetPosition(CurrentLeaderID, teleportPosOut)
-                end
-            end
+            SetPosition(currentLeaderId, teleportPosOut)
         end
-        if tpKardinel == false then
-            CurrentLeaderID = Logic.GetNextLeader(1,CurrentLeaderID)
-        else
-            tpKardinel = false
-        end
-    until FirstLeaderID == CurrentLeaderID
+    end
     if ESCAPEDCASTLE then
         return true
     end
@@ -252,21 +273,20 @@ function teleportOutCave()
         TeleportSettler(GetEntityId("Scout"), teleportPosOut.X, teleportPosOut.Y)
         ChangePlayer("Scout", 8)
     end
+    if IsNear("Kardinel", "CaveExit", 700) then
+        DestroyEntity(GetEntityId("Kardinel"))
+        DestroyEntity(GetEntityId("Feuerzahn"))
+    end
+    
     local leaderIds = GetPlayerLeaderIds(1)
     for i = 1, table.getn(leaderIds) do
         local currentLeaderId = leaderIds[i]
         if currentLeaderId ~= 0 and IsNear(currentLeaderId, "CaveExit", 400) then
             local teleportPosOut = GetPosition("CrawlerExit")
-            if currentLeaderId == GetEntityId("Kardinel") then
-                DestroyEntity(GetEntityId("Kardinel"))
-                DestroyEntity(GetEntityId("Feuerzahn"))
-                ChangePlayer("Kardinel", 8)
-            else
-                Logic.SetEntityName(currentLeaderId, "BK" .. BKNUMBER)
-                TeleportSettler(GetEntityId("BK" .. BKNUMBER), teleportPosOut.X, teleportPosOut.Y)
-                ChangePlayer("BK" .. BKNUMBER, 8)
-                BKNUMBER = BKNUMBER + 1
-            end
+            Logic.SetEntityName(currentLeaderId, "BK" .. BKNUMBER)
+            TeleportSettler(GetEntityId("BK" .. BKNUMBER), teleportPosOut.X, teleportPosOut.Y)
+            ChangePlayer("BK" .. BKNUMBER, 8)
+            BKNUMBER = BKNUMBER + 1
         end
     end
     if ESCAPEDCASTLE then
@@ -294,28 +314,33 @@ function checkForEverybody()
         for i = 0, BKNUMBER do
             ChangePlayer("BK"..i,1)
         end
+        createKardinel("CrawlerExitKardinel")
         BriefingArriveOutside()
         return true
     end
 end
 
 function arriveOutside()
+    AddPeriodicNight(99999)
     Camera.ZoomSetFactorMax(1.75)
     local markerPos = GetPosition("CaveExit")
     GUI.DestroyMinimapPulse(markerPos.X,markerPos.Y)
     Explore.Hide("explCaveExit")
+    GUI.CreateMinimapMarker(GetPosition("spvillage1").X,GetPosition("spvillage1").Y,2)
+	Explore.Show("expl0", "spvillage1", 1000)
     local NPC = {
         name = "mayorAltea",
         callback = BriefingMayorAltea
     }
-    createKardinel("CrawlerExitKardinel")
     CreateNPC(NPC)
     StartTimer()
     Waves()
     createBanditDefArmy()
     StartSimpleJob("checkForCompletion")
-    --StartSimpleJob("checkForEscapedBK")
+    StartSimpleJob("checkForEscapedBK")
     StartSimpleJob("checkForSuedfang")
+    StartSimpleJob("checkForBigWave")
+    StartSimpleJob("checkForStatue")
 end
 
 function initVillageEscapeQuest()
@@ -367,6 +392,7 @@ function villageEmpty(_playerId)
 end
 
 function startEvacuation(_playerId)
+    DestroyEntity("mayor" .. VILLAGENAMES[_playerId])
     if _playerId == 2 then
         setupFleeingCaravan(_playerId, 1)
     elseif _playerId == 5 then
@@ -383,10 +409,11 @@ function setupFleeingCaravan(_playerId, _currentWave)
         return
     end
     ALIVEWORKERS[_playerId] = ALIVEWORKERS[_playerId] - amount
+    local fleeingPos = GetPosition("fleeingsp" .. _playerId)
     for i = 1, amount do
         local position = {
-            X = GetPosition("fleeingsp" .. _playerId).X + math.random(-100, 100),
-            Y = GetPosition("fleeingsp" .. _playerId).Y + math.random(-100, 100)
+            X = fleeingPos.X + math.random(-100, 100),
+            Y = fleeingPos.Y + math.random(-100, 100)
         }
         local name = "fleeing" .. _currentWave .. _playerId .. i
         CreateMilitaryGroup(_playerId, Entities.PU_Travelling_Salesman, 0, position, name )
@@ -394,6 +421,26 @@ function setupFleeingCaravan(_playerId, _currentWave)
     end
     initEnemyCaravanAttackers(_playerId)
     Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "waitForNextCaravan" , 1, {}, {_playerId,_currentWave})
+    Sound.PlayGUISound( Sounds.fanfare , 100 )
+    if ALIVEWORKERS[_playerId] == 0 then
+        Message("Die letzte Karavane von " .. VILLAGENAMES[_playerId] .. " ist unterwegs!")
+    elseif _currentWave ~= 0 then
+        Message("Die nächste Karavane von " .. VILLAGENAMES[_playerId] .. " ist unterwegs!")
+    end
+    GUI.CreateMinimapPulse(fleeingPos.X, fleeingPos.Y, 0)
+    if _playerId == 5 then
+        StartCountdown(5, function ()
+            GUI.DestroyMinimapPulse(GetPosition("fleeingsp5").X, GetPosition("fleeingsp5").Y)
+        end, false)
+    elseif _playerId == 6 then
+        StartCountdown(5, function ()
+            GUI.DestroyMinimapPulse(GetPosition("fleeingsp6").X, GetPosition("fleeingsp6").Y)
+        end, false)
+    else
+        StartCountdown(5, function ()
+            GUI.DestroyMinimapPulse(GetPosition("fleeingsp2").X, GetPosition("fleeingsp2").Y)
+        end, false)
+    end 
 end
 
 function controlFleeingCaravan(_caravanName,_playerId,_currentPoint)
@@ -471,11 +518,17 @@ function waitForNextCaravan(_playerId,_currentWave)
 end
 
 function checkRemainingCaravan(_playerId,_lastWave)
-    local playername = "Altea"
+    local playername
     if _playerId == 6 then
         playername = "Sonnspitz"
     elseif _playerId == 2 then
         playername = "Finsterwald"
+        Redeploy(MapEditor_Armies[2],GetPosition("towndefpoint1"),nil,"offensiveArmies")
+        MapEditor_Armies[2].rodeLength = 3000
+    elseif _playerId == 5 then
+        playername = "Altea"
+        ChangePlayer("barracksp52",5)
+        Redeploy(MapEditor_Armies[5],GetPosition("townleftdef"),nil,"offensiveArmies")
     end
     for j = 1, CARAVANWAVEAMOUNT do
         if IsDead("fleeing" .. _lastWave .. _playerId .. j) == false then
@@ -484,13 +537,31 @@ function checkRemainingCaravan(_playerId,_lastWave)
     end
     VILLAGESTATUS[_playerId] = 3
     Message("Kardinel: Alle Karavanen von " .. playername .. " sind angekommen.")
-    if VILLAGESTATUS[2] == 3 and VILLAGESTATUS[5] == 3 and VILLAGESTATUS[6] == 3 then
-        --TODO: Letzte Welle
+    if VILLAGESTATUS[2] == 3 and VILLAGESTATUS[5] == 3 and VILLAGESTATUS[6] == 3 and VILLAGESTATUS[7] == 1 then
+        BriefingLastWave()
     end
     return true
 end
 
+function prepareLastWave()
+    LASTWAVE = true
+    StartCountdown(600, function ()
+        if IsDead("p7hq") == false then
+            HOLDOUT = true
+            GDB.SetString("FmFSuedfang","1")
+            for i = 1, 3 do
+                ReplaceEntity( GetEntityId("suedfanggate" .. i), Entities.XD_WallStraightGate_Closed)
+            end
+            BriefingHoldout()
+            createArmiesFinish()
+        end
+    end, true)
+    createLastWaves()
+    GUI.CreateMinimapPulse(GetPosition("p7hq").X, GetPosition("p7hq").Y, 0)
+end
+
 function mayorAlteaSpoken()
+    StartCountdown(10,BriefingKardinelOutside,false)
     VILLAGESTATUS[5] = 1
     Logic.SetShareExplorationWithPlayerFlag(1, 5, 1)
     for i = 1, 2 do
@@ -518,9 +589,8 @@ function mayorAlteaSpoken()
     CreateNPC(NPC)
     GUI.CreateMinimapMarker(GetPosition("WorkerEscapePoint").X,GetPosition("WorkerEscapePoint").Y,2)
 	Explore.Show("explEscape", "WorkerEscapePoint", 1000)
-    BANDITQUESTSTARTED = true
-    GUI.CreateMinimapMarker(GetPosition("banditSpawn").X,GetPosition("banditSpawn").Y,2)
-	Explore.Show("explBandits", "banditSpawn", 1500)
+    banditBroNPC()
+    scoutP5NPC()
 end
 
 function mayorSonnspitzSpoken()
@@ -547,51 +617,109 @@ function mayorFinsterwaldSpoken()
 end
 
 function checkForSuedfang()
-    if WORKERSESCAPED >= 15 * Difficulty + 50 then
-        BriefingSuedfang()
-        VILLAGESTATUS[7] = 1
-        Logic.SetShareExplorationWithPlayerFlag(1, 7, 1)
-        for i = 3, 5 do
-            ChangePlayer("merc" .. i, 1)
-        end
-        ChangePlayer("archertower", 1)
+    if WORKERSESCAPED >= 10 * Difficulty + 50 then
+        Message("Regent Dovbar möchte euch in Südfang sprechen!")
+        local markerPos = GetPosition("Dovbar")
+        GUI.CreateMinimapMarker(markerPos.X,markerPos.Y,2)
+        Explore.Show("Dovbar", "Dovbar", 500)
+        local NPC = {
+            name = "Dovbar",
+            callback = BriefingSuedfang
+        }
+        CreateNPC(NPC)
+
         return true
     end
 end
 
+function allyWithSuedfang()
+    VILLAGESTATUS[7] = 1
+    Logic.SetShareExplorationWithPlayerFlag(1, 7, 1)
+    for i = 3, 5 do
+        ChangePlayer("merc" .. i, 1)
+    end
+    ChangePlayer("archertower", 1)
+end
+
+function checkForBigWave()
+    if LASTWAVE == true then
+        return true
+    end
+    if Counter.Tick2("BigWave",600) then
+        local target = {}
+        if VILLAGESTATUS[5] < 3 and VILLAGESTATUS[5] > 0 then
+            table.insert(target,5)
+        end
+        if VILLAGESTATUS[6] < 3 and VILLAGESTATUS[6] > 0 then
+            table.insert(target,6)
+        end
+        if VILLAGESTATUS[2] < 3 and VILLAGESTATUS[2] > 0 then
+            table.insert(target,2)
+        end
+        if table.getn(target) == 0 then
+            target = {7}
+        end
+        local finalTarget = target[math.random(table.getn(target))]
+        if SCOUTCHECK == 2 then
+            Message("Kundschafter: Eine große Menge an Feinden ist auf dem weg nach " .. VILLAGENAMES[finalTarget] .. "!")
+        end
+        if finalTarget == 5 then
+            StartCountdown(30,function ()
+                BigWaves(5)
+            end, false)
+        elseif finalTarget == 6 then
+            StartCountdown(30,function ()
+                BigWaves(6)
+            end, false)
+        elseif finalTarget == 2 then
+            StartCountdown(30,function ()
+                BigWaves(2)
+            end, false)
+        else
+            StartCountdown(30,function ()
+                BigWaves(7)
+            end, false)
+        end
+    end
+end
+
 function checkForEscapedBK()
-    if IsNear("Kerberos", "WorkerEscapePoint", 400) then
+    if IsNear("Kerberos", "WorkerEscapePoint", 500) then
         DestroyEntity(GetEntityId("Kerberos"))
         KERBEROSESCAPED = true
     end
-    local FirstLeaderID = Logic.GetNextLeader(1, 0)
-    local CurrentLeaderID = FirstLeaderID
-    repeat
-        if CurrentLeaderID ~= 0 then
-        if IsNear(CurrentLeaderID, "WorkerEscapePoint", 400) then
-            if CurrentLeaderID == GetEntityId("Kardinel") then
-                DestroyEntity(GetEntityId("Kardinel"))
-                DestroyEntity(GetEntityId("Feuerzahn"))
-                GDB.SetString("FmFKardinel","1")
-                else
-                    BKESCAPED = BKESCAPED + Logic.GetNumberOfSoldiers(CurrentLeaderID) + 1
-                    Logic.DestroyGroupByLeader(CurrentLeaderID)
-                end
-            end
+    if IsNear("Kardinel", "WorkerEscapePoint", 500) then
+        GDB.SetString("FmFKardinel","1")
+        Logic.DestroyGroupByLeader(GetEntityId("Kardinel"))
+        DestroyEntity(GetEntityId("Feuerzahn"))
+    end
+    local leaderIds = GetPlayerLeaderIds(1)
+    for i = 1, table.getn(leaderIds) do
+        local currentLeaderId = leaderIds[i]
+        if currentLeaderId ~= 0 and IsNear(currentLeaderId, "WorkerEscapePoint", 500) then
+            Logic.DestroyGroupByLeader(currentLeaderId)
         end
-        CurrentLeaderID = Logic.GetNextLeader(1,CurrentLeaderID)
-    until FirstLeaderID == CurrentLeaderID
+    end
 end
 
 function checkForCompletion()
     if AI.Player_GetNumberOfLeaders(1) == 0 then
         if KERBEROSESCAPED == true then
             GDB.SetString("FmFEscaped", WORKERSESCAPED)
-            GDB.SetString("FmFBK", BKESCAPED)
             BriefingVictory()
             return true
         end
         BriefingDefeat()
         return true
+    end
+    if HOLDOUT == true then
+        if IsDead("Kardinel") and IsDead("Kerberos") then
+            if KERBEROSESCAPED == true then
+                GDB.SetString("FmFEscaped", WORKERSESCAPED)
+                BriefingVictory()
+                return true
+            end
+            BriefingDefeat()
+        end
     end
 end

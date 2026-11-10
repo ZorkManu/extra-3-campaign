@@ -3,7 +3,8 @@
 --++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 LocalMusic = LocalMusic or {}
 
-LocalMusic.MusicPath = "maps\\user\\Skripte\\Koop\\music\\"
+LocalMusic.MusicPath = Folders.Music
+LocalMusic.MusicPathBoss = "maps\\user\\Skripte\\Koop\\music\\"
 
 LocalMusic.SetEvelance["summer"] = 	{
 	{ "19_Evelance_Summer1.mp3", 154 },

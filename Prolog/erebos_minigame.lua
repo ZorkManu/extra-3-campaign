@@ -2,6 +2,9 @@ MINIGAME_END = false
 DIRECTIONS = {}
 
 function startErebosMinigame()
+    GUI.CreateMinimapMarker(GetPosition("scoutEscape3").X,GetPosition("scoutEscape3").Y,2)
+    --CEntity.SetMaxHealth(GetEntityId("Rudger"),800 - Difficulty * 200)
+	SetHealth("Rudger", 100)
     SetFriendly(1,8)
     StartSimpleJob("findDestroyedVillage")
     StartSimpleJob("firstCave")
@@ -10,16 +13,11 @@ function startErebosMinigame()
     StartSimpleJob("thirdCave")
     StartSimpleJob("finalCaves")
     CreateMilitaryGroup(8, Entities.PU_Hero14, 0, GetPosition("passerepos1"), "e1")
-    StartSimpleJob("controlE1")
     CreateMilitaryGroup(8, Entities.PU_Hero14, 0, GetPosition("sidebaseerepos1"), "e2")
     CreateMilitaryGroup(8, Entities.PU_Hero14, 0, GetPosition("sidebaseerepos5"), "e3")
-    StartSimpleJob("controlE23")
     CreateMilitaryGroup(8, Entities.PU_Hero14, 0, GetPosition("eredreieck1"), "e4")
-    StartSimpleJob("controlE4")
     CreateMilitaryGroup(8, Entities.PU_Hero14, 0, GetPosition("ereRun1"), "e5")
-    StartSimpleJob("controlE5")
     CreateMilitaryGroup(8, Entities.PU_Hero14, 0, GetPosition("ereBack1"), "e6")
-    StartSimpleJob("controlE6")
     for i = 1, 5 do
         CreateMilitaryGroup(8, Entities.PU_Hero14, 0, GetPosition("erebosStand"..i), "e" .. 6+i)
     end
@@ -38,6 +36,11 @@ function firstCave()
     if IsNear("Rudger", "checkScout8", 1080) then
         createNVArmyMountains(1, "NVCave1")
         Message("Ich schätze ich bin doch nicht allein hier! Keine Zeit fürs Kämpfen los weiter jetzt.")
+        StartSimpleJob("controlE1")
+        StartSimpleJob("controlE23")
+        StartSimpleJob("controlE4")
+        StartSimpleJob("controlE5")
+        StartSimpleJob("controlE6")
         return true
     end
 end
@@ -188,12 +191,14 @@ function checkForRudger()
             MINIGAME_END = true
             BriefingMountainPassed()
             MakeInvulnerable(GetEntityId("Rudger"))
+            GUI.DestroyMinimapPulse(GetPosition("scoutEscape3").X,GetPosition("scoutEscape3").Y)
             return true
         end
     end
     if IsDead("Rudger") then
         MINIGAME_END = true
         Message("Ihr habt Rudger verloren, es wird keine Verstärkung geben.")
+        GUI.DestroyMinimapPulse(GetPosition("scoutEscape3").X,GetPosition("scoutEscape3").Y)
         return true
     end
 end

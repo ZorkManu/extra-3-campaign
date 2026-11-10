@@ -11,6 +11,7 @@ Script.Load("maps\\user\\Skripte\\Kapitel1\\main_mission.lua")
 Script.Load("maps\\user\\Skripte\\Kapitel1\\side_quests.lua")
 Script.Load("maps\\user\\Skripte\\Kapitel1\\briefings.lua")
 Script.Load("maps\\user\\Skripte\\Kapitel1\\armies.lua")
+Script.Load("maps\\user\\Skripte\\Kapitel1\\day_night_cycle.lua")
 IncludeGlobals("MapEditorTools")
 
 Difficulty = 2
@@ -36,9 +37,15 @@ end
 --++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -- This function is called on game start and after save game is loaded, setup your weather gfx
 -- sets here
-function InitWeatherGfxSets()
+function Mission_InitWeatherGfxSets()
 	SetupHighlandWeatherGfxSet()
     Camera.ZoomSetFactorMax(1.5)
+end
+
+--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-- This function is called on game start you should setup your weather periods here
+function InitWeather()
+	AddPeriodicNight(CYCLELENGTH)
 end
 
 --++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -72,15 +79,45 @@ function FirstMapAction()
     LocalMusic.UseSet = HIGHLANDMUSIC
     MapEditor_SetupAI(2, 3, 10000, 2, "southEntrance", 0, 0)
 	SetupPlayerAi( 2, {constructing = false, extracting = true, repairing = true, serfLimit = 4} )
-	MapEditor_SetupAI(6, 3, 100000, 2, "eresummon2", 0, 0)
+	MapEditor_SetupAI(6, 3, 100000, 2, "baseMary", 0, 0)
 	SetupPlayerAi( 6, {constructing = false, extracting = true, repairing = true, serfLimit = 4} )
     MapEditor_Armies[2].offensiveArmies.strength = 0
     MapEditor_Armies[2].defensiveArmies.strength = 0
 	MapEditor_Armies[2].description.rebuildData.delay = 999999
+	gvMercenaryTower.Cooldown.BuyLeaderBarbarian = 0
+	gvMercenaryTower.Cooldown.BuyLeaderElite = 0
     createArmyMine()
     BriefingStart()
+	--testNevassa()
     initSmithQuest()
     initSilverQuest()
+	StartSimpleJob("checkForDefeat")
+end
+
+function testNevassa()
+	AddGold(5000)
+	AddIron(3000)
+	local pos = GetPosition("defYuki")
+	TeleportSettler(GetEntityId("Varg"),pos.X,pos.Y)
+	for i = 1, 3 do
+		TeleportSettler(GetEntityId("b" .. i), pos.X,pos.Y)
+	end
+	NEVASSA_REACHED = true
+	islandAttacker()
+	startTownFight()
+end
+
+function checkForDefeat()
+	if NEVASSA_TAKEN == true then
+		if IsDead("p2hq") then
+			Defeat()
+			return true
+		end
+	else
+		if AI.Player_GetNumberOfLeaders(1) == 0 then
+			Defeat()
+		end
+	end
 end
 
 --https://dedk.de/wiki/doku.php?id=tutorials:briefings-erweiterungen
@@ -173,7 +210,7 @@ function ActivateBriefingsExpansion()
 end
 
 function Modulo(_A, _B)
-    while _A > _B do
+    while _A >= _B do
         _A = _A - _B
     end
     return _A

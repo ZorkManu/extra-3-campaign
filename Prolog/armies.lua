@@ -346,7 +346,7 @@ function initArmyDefendGraveyard()
         id = GetFirstFreeArmySlot(6),
         strength = 8,
         position = GetPosition("defenseArmyGhost"),
-        rodeLength = 4000
+        rodeLength = 6000
     }
 
     SetupArmy(ArmyDefendGraveyard)
@@ -638,7 +638,7 @@ function createOneTimeArmy5NVDef()
         id = GetFirstFreeArmySlot(5),
         strength = 8,
         position = GetPosition("oneTimeArmy5"),
-        rodeLength = 3000
+        rodeLength = 6000
     }
 
     SetupArmy(OneTimeArmies[6])
@@ -661,6 +661,37 @@ function controlOneTimeArmy5NVDef()
         return true
     end
     Defend(OneTimeArmies[6])
+end
+
+function initVCAttacker()
+    ArmyVCAttacker = {
+        player = 5,
+        id = GetFirstFreeArmySlot(5),
+        strength = 8,
+        position = GetPosition("vcattackspawn"),
+        rodeLength = 10000
+    }
+
+    SetupArmy(ArmyVCAttacker)
+
+    local troopDescription = {}
+    troopDescription.maxNumberOfSoldiers = 20
+    troopDescription.minNumberOfSoldiers = 1
+    troopDescription.experiencePoints = HIGH_EXPERIENCE
+    troopDescription.leaderType = Entities.CU_Evil_LeaderBearman1
+
+    for i = 1, Difficulty * 3, 1 do
+        EnlargeArmy(ArmyVCAttacker, troopDescription)
+    end
+
+    StartSimpleJob("controlArmyVCAttacker")
+end
+
+function controlArmyVCAttacker()
+    if IsDead(ArmyVCAttacker) then
+        return true
+    end
+    Advance(ArmyVCAttacker)
 end
 
 function createNVArmyMountains(_id, _pos)

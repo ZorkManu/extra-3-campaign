@@ -40,24 +40,24 @@ function Waves()
     end
     if (TICK ~= 0) and (TICK < BOSSWAVES[1]) or (TICK < BOSSWAVES[2] and TICK > BREAK[1]) or (TICK < BOSSWAVES[3] and TICK > BREAK[2]) or (TICK > BREAK[3]) then
         WavesP1()
-        --WavesP2()
-        --WavesP3()
+        WavesP2()
+        WavesP3()
         if fourthplayeractive == 1 then
             WavesP4()
         end
     end
     if TICK == BOSSWAVES[1] then
         createNVBossWave1()
-        --createNVBossWave2()
-        --createNVBossWave3()
+        createNVBossWave2()
+        createNVBossWave3()
         createNVBossWave4()
         NVACTIVE = 1
     elseif TICK == BOSSWAVES[2] then
         local wtype = Logic.GetWeatherState()
         Logic.AddWeatherElement(wtype, 300, 0, NighttimeGFXSets[wtype][1], 5, 15)
         createSpecialUnitBossWave1()
-        --createSpecialUnitBossWave2()
-        --createSpecialUnitBossWave3()
+        createSpecialUnitBossWave2()
+        createSpecialUnitBossWave3()
         createSpecialUnitBossWave4()
         SPECIALSACTIVE = 1
         BOSSFIGHT2 = true

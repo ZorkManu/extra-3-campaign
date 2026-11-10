@@ -1,16 +1,17 @@
 Armies = {}
 CONST_ARMY_INDEX = 0
+StartingArmies = {}
+CONST_STARTING_ARMY_INDEX = 0
 
 function createStartingArmies()
-    createArmyStart()
     createArmyHallWay()
     createSharpShooterDef()
     createArmyDefendBarricade()
 end
 
 function createArmyStart()
-    for i = 1, 4 do
-        Armies[CONST_ARMY_INDEX] = {
+    for i = 1, 5 - (gvDiffLVL-1) do
+        StartingArmies[CONST_STARTING_ARMY_INDEX] = {
             player = 3,
             id = GetFirstFreeArmySlot(3),
             strength = 8,
@@ -18,7 +19,7 @@ function createArmyStart()
             rodeLength = 3000
         }
 
-        SetupArmy(Armies[CONST_ARMY_INDEX])
+        SetupArmy(StartingArmies[CONST_STARTING_ARMY_INDEX])
 
         local troopDescription = {}
         troopDescription.maxNumberOfSoldiers = 4
@@ -26,17 +27,45 @@ function createArmyStart()
         troopDescription.experiencePoints = HIGH_EXPERIENCE
         troopDescription.leaderType = Entities.PU_LeaderSword1_Spectral
 
-        if i == 2 and Difficulty >= 2 or i == 3 and Difficulty == 3 then
+        if i == 3 and Difficulty == 3 then
             troopDescription.leaderType = Entities.PU_LeaderSword4_Spectral
         end
 
         for j = 1, 1 do
-            EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
+            EnlargeArmy(StartingArmies[CONST_STARTING_ARMY_INDEX], troopDescription)
         end
 
-        Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyDefend" , 1, {}, {CONST_ARMY_INDEX})
-        CONST_ARMY_INDEX = CONST_ARMY_INDEX + 1
+        Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyStartAdvance" , 1, {}, {CONST_STARTING_ARMY_INDEX})
+        CONST_STARTING_ARMY_INDEX = CONST_STARTING_ARMY_INDEX + 1
     end
+
+    ARMYMARY = {
+        player = 3,
+        id = GetFirstFreeArmySlot(3),
+        strength = 8,
+        position = GetPosition("armyStart1"),
+        rodeLength = 10000
+    }
+    
+    SetupArmy(ARMYMARY)
+    
+    ConnectLeaderWithArmy(GetEntityId("Mary"),ARMYMARY)
+    
+    StartSimpleJob("ControlMary")
+end
+
+function controlArmyStartAdvance(_id)
+    if IsDead(StartingArmies[_id]) then
+        return true
+    end
+    Advance(StartingArmies[_id])
+end
+
+function controlMary()
+    if IsDead(ARMYMARY) then
+        return true
+    end
+    Advance(ARMYMARY)
 end
 
 function createArmyHallWay()
@@ -423,6 +452,41 @@ function createSpecialAttacker5()
 
     Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyDefend" , 1, {}, {CONST_ARMY_INDEX})
     CONST_ARMY_INDEX = CONST_ARMY_INDEX + 1
+end
+
+function createArmiesFinish()
+    for i = 1, 4 do
+        local pos = "p6cavspawn"
+        if i == 2 then
+            pos = "townmiddle"
+        elseif i == 3 then
+            pos = "fleeingsp7"
+        elseif i == 4 then
+            pos = "towndefpoint3"
+        end
+        Armies[CONST_ARMY_INDEX] = {
+            player = 3,
+            id = GetFirstFreeArmySlot(3),
+            strength = 8,
+            position = GetPosition(pos),
+            rodeLength = 1000
+        }
+
+        SetupArmy(Armies[CONST_ARMY_INDEX])
+
+        local troopDescription = {}
+        troopDescription.maxNumberOfSoldiers = 12
+        troopDescription.minNumberOfSoldiers = 1
+        troopDescription.experiencePoints = HIGH_EXPERIENCE
+
+        for i = 1, 30 do
+            troopDescription.leaderType = getRandomGhostMeleeTroop()
+            EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
+        end
+
+        Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyDefend" , 1, {}, {CONST_ARMY_INDEX})
+        CONST_ARMY_INDEX = CONST_ARMY_INDEX + 1
+    end
 end
 
 function createSpecialAttacker6()

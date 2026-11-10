@@ -13,12 +13,12 @@ function BriefingStart()
         dialogCamera = true
     }
     local page3 = AP {
-        text = "Wieso sie sich jetzt bekämpften war König Dario ein Rätsel.",
+        text = "Wieso sie sich jetzt bekämpften, war König Dario ein Rätsel.",
         position = GetPosition("CameraStartFight"),
         dialogCamera = true
     }
     local page4 = AP {
-        text = "Ari höchstpersönlich machte sich auf den Weg, um den Grund in Erfahrung zu bringen...",
+        text = "Ari höchstpersönlich machte sich auf den Weg, um den Grund in Erfahrung zu bringen ...",
         npc = { 
             id = GetEntityId( "Ari" ), 
             isObserved = true 
@@ -64,7 +64,7 @@ function BriefingStart()
     }
     local page8 = AP {
         title = "Ari",
-        text = "Die beiden Dörfer befinden sich gerade im Krieg, wir sollten schauen, wem wir trauen können, bevor wir uns denen offenbaren.",
+        text = "Die beiden Dörfer befinden sich gerade im Krieg, @cr Wir sollten schauen, wem wir trauen können.",
         npc = { 
             id = GetEntityId( "Ari" ), 
             isObserved = true 
@@ -75,7 +75,7 @@ function BriefingStart()
             end,
         quest = {
             title = "Informationsbeschaffung",
-            text = "Schaut Euch um und bringt Etwas über die Dörfer in Erfahrung.",
+            text = "Schaut Euch um und findet mehr über die Dörfer heraus.",
             type = MAINQUEST_OPEN,
             id = 1
         }
@@ -106,7 +106,7 @@ function BriefingSwords()
     }
     local page3 = AP {
         title = "Hauptmann",
-        text = "Wir gehören Sturmbach an. Als wir von Eurer Ankunft hörten, sind wir aufgebrochen, um Euch sicher ins Dorf zu führen.",
+        text = "Wir stammen aus Sturmbach. Als wir von Eurer Ankunft hörten, sind wir aufgebrochen, um Euch sicher ins Dorf zu führen.",
         position = GetPosition("Sword1")
     }
     local page4 = AP {
@@ -120,7 +120,7 @@ function BriefingSwords()
         position = GetPosition("Ari"),
         quest = {
             title = "Folgt den fremden Soldaten",
-            text = "Die Soldaten führen sicher etwas im Schilde, folgt ihnen aber erst besser um nicht Verdächtig zu wirken.",
+            text = "Die Soldaten führen sicher etwas im Schilde, folgt ihnen aber erst besser um nicht verdächtig zu wirken.",
             type = MAINQUEST_OPEN,
             id = 2
         }
@@ -206,7 +206,7 @@ function BriefingBandits()
 
     local page1 = AP {
         title = "Ari",
-        text = "Verdammt, diese Idioten. Gegen so viele hätten sie nichts machen können. Ich muss es positiv sehen, immerhin werde ich wohl schneller erfahren was hier los ist als ich dachte.",
+        text = "Verdammt, diese Idioten. Gegen so viele hatten sie keine Chance. @cr Ich sollte das Positive darin sehen: Wenigstens werde ich wohl schneller herausfinden, was hier vor sich geht, als ich dachte",
         position = GetPosition("Ari")
     }
     local page2 = AP {
@@ -219,12 +219,10 @@ function BriefingBandits()
         text = "Lange Zeit nicht gesehen, Boss.",
         position = GetPosition("banditAmbush"),
         action = function ()
-            CreateMilitaryGroup(1, Entities.CU_VeteranCaptain, 0, GetPosition("banditAmbush"), "Schwarz")
+            CreateMilitaryGroup(1, Entities.PU_Hero_Bandit, 0, GetPosition("banditAmbush"), "Schwarz")
             LookAt("Schwarz", "Ari")
-            StartCountdown(1, function ()
-                Logic.SetEntityScriptingValue(GetEntityId("Schwarz"),72,1)
-			    CUtil.SetEntityDisplayName(GetEntityId("Schwarz"), "Schwarz")
-            end, false)
+            --Logic.SetEntityScriptingValue(GetEntityId("Schwarz"),72,1)
+			CUtil.SetEntityDisplayName(GetEntityId("Schwarz"), "Schwarz")
         end
     }
     local page4 = AP {
@@ -418,7 +416,7 @@ function BriefingPostAttack()
 
     briefing.finished = function ()
         Logic.SetQuestType(1, 4, MAINQUEST_CLOSED, 0)
-        Logic.AddQuest(1, 5, MAINQUEST_OPEN, "Verstärkung","Alleine habt Ihr schlechte Chancen zu Überleben. Sucht Winkelhain nach Möglichkeiten ab Eure Verbündeten zu alarmieren", 0)
+        Logic.AddQuest(1, 5, MAINQUEST_OPEN, "Verstärkung","Alleine habt Ihr schlechte Chancen zu überleben. Sucht Winkelhain nach Möglichkeiten ab Eure Verbündeten zu alarmieren", 0)
         Logic.AddQuest(1, 6, MAINQUEST_OPEN, "Begraben des Kriegsbeils","Sturmbach ist nicht mehr Eure Priorität, gewinnt sie als Mitstreiter für den Kampf.", 0)
         Logic.AddQuest(1, 7, MAINQUEST_OPEN, "Gegenoffensive","Ihr werdet vom Nebelvolk und unbekannten Truppen angegriffen. Vernichtet die Angreifer und bringt der Region den Frieden zurück.", 0)
         thirdQuest()
@@ -439,7 +437,7 @@ function BriefingEnterSturmhain()
     }
     local page2 = AP {
         title = "Ari",
-        text = "Sagt mir bitte, ihr habt gerade nichts Wichtigeres zu tun, als mir mit Kopfgeldern zu drohen. Von hier aus sehe ich, dass ihr selbst kaum überlebt. Wer ist denn so lebensmüde, ein Kopfgeld auf mich auszusetzen?",
+        text = "Sagt mir bitte, Ihr habt gerade nichts Wichtigeres zu tun, als mir mit Kopfgeldern zu drohen. Von hier aus sehe ich, dass Ihr selbst kaum überlebt. Wer ist denn so lebensmüde, ein Kopfgeld auf mich auszusetzen?",
         position = GetPosition("BaseSturmbach"),
         explore = BRIEFING_EXPLORATION_RANGE,
     }
@@ -450,7 +448,7 @@ function BriefingEnterSturmhain()
     }
     local page4 = AP {
         title = "Ari",
-        text = "Den Urlaub könnt Ihr euch abschminken, wenn euer Dorf vorher untergeht. Ohne Unterstützung der königstreuen Siedlungen seid ihr erledigt. Also: Wo steckt dieser Bürgermeister? Helft mir, und vielleicht müsst ihr euren Ruhestand nicht im brennenden Dorf verbringen.",
+        text = "Den Urlaub könnt Ihr euch abschminken, wenn euer Dorf vorher untergeht. Ohne Unterstützung der königstreuen Siedlungen seid ihr erledigt. Also: Wo steckt dieser Bürgermeister? Helft mir, und vielleicht müsst Ihr euren Ruhestand nicht im brennenden Dorf verbringen.",
         position = GetPosition("Ari")
     }
     local page5 = AP {
@@ -554,7 +552,7 @@ function BriefingMayorWinkelhain2()
     }
     local page5 = AP {
         title = "Bürgermeister",
-        text = "Ihr wollt doch nicht etwa sagen...? Ich weiß zwar nicht was mit wem wir es hier zu tun haben, aber diese Übermacht können wir auch mit Sturmbachs Hilfe nicht besiegen. Wenn uns niemand retten kommt, sind wir bald alle Geschichte!",
+        text = "Ihr wollt doch nicht etwa sagen...? Ich weiß zwar nicht, mit wem oder was wir es hier zu tun haben, aber diese Übermacht können wir auch mit Sturmbachs Hilfe nicht besiegen. Wenn uns niemand retten kommt, sind wir bald alle Geschichte!",
         position = GetPosition("mayorWinkelhain")
     }
     local page6 = AP {
@@ -648,7 +646,7 @@ function BriefingMountains()
         text = "Da haben wir ja das Tor.",
         position = GetPosition("Rudger"),
         action = function ()
-            gate = ReplaceEntity( GetEntityId("gateMountain"), Entities.XD_PalisadeGate2)
+            local gate = ReplaceEntity( GetEntityId("gateMountain"), Entities.XD_PalisadeGate2)
             SetEntityName(gate, "gateMountain")
         end
     }
@@ -679,12 +677,11 @@ function BriefingMountains()
     briefing.finished = function ()
         DestroyNPC{name = "Rudger"}
         Move("Rudger", "scoutMove")
-        StartCountdown(2, function ()
-            Logic.SetEntityScriptingValue(GetEntityId("Rudger"),72,1)
-            CUtil.SetEntityDisplayName(GetEntityId("Rudger"), "Rudger")
-            gate = ReplaceEntity( GetEntityId("gateMountain"), Entities.XD_PalisadeGate1)
-            SetEntityName(gate, "gateMountain")
-        end, false)
+    
+        --Logic.SetEntityScriptingValue(GetEntityId("Rudger"),72,1)
+        CUtil.SetEntityDisplayName(GetEntityId("Rudger"), "Rudger")
+        local gate = ReplaceEntity( GetEntityId("gateMountain"), Entities.XD_PalisadeGate1)
+        SetEntityName(gate, "gateMountain")
         StartCountdown(10, startErebosMinigame, false)
     end
 
@@ -773,7 +770,7 @@ function BriefingVictory()
     ASP("Ari","Ari","Schwarz, du bleibst hier und kümmerst dich Sturmbach. Ich brauche starke Verbündete sollte die Situation schlimmer werden.", true)
     ASP("Schwarz","Schwarz","Ich? Ich kann nicht behaupten, dass ich sowas je getan habe, aber ich werde dich nicht enttäuschen Boss", true)
     AP()
-    ASP("Ari","Ari","Der Bürgermeister von Winkelhain sollte das übernehmen. Er hat dann zwar mehr zu tun, aber er hat die Nötige Erfahrung zum regieren.", true)
+    ASP("Ari","Ari","Der Bürgermeister von Winkelhain sollte das übernehmen. Er hat dann zwar mehr zu tun, aber er hat die nötige Erfahrung zum Regieren.", true)
     
 
     briefing.finished = function ()
@@ -799,7 +796,7 @@ function BriefingVictoryNoReeinf()
     ASP("Schwarz","Schwarz","Sorry, ich kann nicht lesen.", true)
     ASP("Ari","Ari","Dann gib mal her.",true)
     ASP("Ari","Ari","Scheint in einer anderen Sprache zu sein. Wir sollten die Schriften wohl einmal analysieren lassen.", true)
-    ASP("Schwarz","Schwarz","Dann sollten wir wohl nach Mercius. In solchen Hintlerwälterdörfern wie hier wird wohl kaum wer Sprachgelehrter sein.", true)
+    ASP("Schwarz","Schwarz","Dann sollten wir wohl nach Mercius. In solchen Hinterwälderdörfern wie hier wird wohl kaum wer Sprachgelehrter sein.", true)
     ASP("Ari","Ari","Stimmt, dann lass uns sofort aufbrechen",true)
     ASP("Schwarz","Schwarz","Alles klar, Boss.",true)
     local choicePage = AP{
@@ -816,7 +813,7 @@ function BriefingVictoryNoReeinf()
     ASP("Ari","Ari","Schwarz, du bleibst hier und kümmerst dich Sturmbach. Ich brauche starke Verbündete sollte die Situation schlimmer werden.", true)
     ASP("Schwarz","Schwarz","Ich? Ich kann nicht behaupten, dass ich sowas je getan habe, aber ich werde dich nicht enttäuschen Boss", true)
     AP()
-    ASP("Ari","Ari","Der Bürgermeister von Winkelhain sollte das übernehmen. Er hat dann zwar mehr zu tun, aber er hat die Nötige Erfahrung zum regieren.", true)
+    ASP("Ari","Ari","Der Bürgermeister von Winkelhain sollte das übernehmen. Er hat dann zwar mehr zu tun, aber er hat die nötige Erfahrung zum Regieren.", true)
     
 
     briefing.finished = function ()
@@ -907,7 +904,7 @@ function BriefingVillagerWinkelhain(_villager)
     if _villager == 1 then
         ASP(name,"Holzfäller Dietrich","Hach, schwere Zeiten sind über uns.",true)
         ASP(name,"Holzfäller Dietrich","Ich arbeite hier schon mein ganzes Leben als einfacher Holzfäller und in all den Jahren habe ich hier nicht so viel Trouble mitbekommen wie in den letzten Wochen. @cr Bei den ganzen Kämpfen traut man sich gar nicht mehr zu tief in den Wald, wer weiß, ob man dort auf die falsche Seite einer Klinge landet.",true)
-        ASP(name,"Holzfäller Dietrich","Immerhin lebe ich nicht auf der anderen Seite des Dorfes. Dort wurden einige meiner Freunde vollkommen verstümmelt aufgefunden... @cr Ich habe eh nicht mehr lange zu Leben, Ihr aber schon. @cr Bitte passt auf, wenn Ihr die Wälder durchstreift, gerade in der Nacht wird es dort sehr gefährlich.",true)
+        ASP(name,"Holzfäller Dietrich","Immerhin lebe ich nicht auf der anderen Seite des Dorfes. Dort wurden einige meiner Freunde vollkommen verstümmelt aufgefunden... @cr Ich habe eh nicht mehr lange zu leben, Ihr aber schon. @cr Bitte passt auf, wenn Ihr die Wälder durchstreift, gerade in der Nacht wird es dort sehr gefährlich.",true)
     elseif _villager == 2 then
         ASP(name,"*Der Maulwurf*","Tag, man nennt mich den Maulwurf!",true)
         ASP(name,"*Der Maulwurf*","Warum fragt Ihr? @cr Ist doch klar, ich arbeite den ganzen Tag in der Mine und gehe abends auch nur in mein kleines Kellergeschoss im nächsten Wohnhaus.", true)
@@ -940,6 +937,13 @@ function BriefingShagsworth()
     ASP("Ari","Ari","Ich weiß nicht was Dario für Leute anheuert, aber Forscher für das Übernatürliche klingt wie ein Geisterjäger. Wollt Ihr mich auf den Arm nehmen?",true)
     ASP("Shagsworth","Shagsworth","Liebend gern! ... Oh warte nein so war das nicht gemeint. @cr Es ist wahr wir sind Geisterjäger, aber glaubt mir unsere Forschung wird essentiell für die Zukunft des Reiches! Wenn Ihr mich entschuldigen würdet: Wir gehen gerade einer Spur nach.",true)
 
+    briefing.finished = function ()
+        SHAGTALKED = true
+        if ATTACK_ENDED then
+            StartSimpleJob("moveShagsworthQuest")
+        end
+    end
+
     StartBriefing(briefing);
 end
 
@@ -970,10 +974,13 @@ function BriefingShagsworthQuest()
     ASP("Ari","Ari","Alles klar, sonst noch Wünsche?",true)
     ASP("Shagsworth","Shagsworth","Etwas Geld wäre auch nicht schlecht, damit ich mir neue Arbeitsutensilien ...",true)
     ASP("Ari","Ari","Das war sarkastisch. Gut ich werde dir dein Versuchsobjekt holen. Warte hier.",true)
+    ASP("Shagsworth","Shagsworth","Vielen Dank, ich habe die Banditen bereits informiert, sie werden die Geister erstmal nicht mehr angreifen", true)
     ASP("ghostPrison","Missionsbeschreibung","Lockt einen Geistertrupp in das Gefängnis!", false)
 
     briefing.finished = function ()
+        SetNeutral(4,6)
         StartSimpleJob("checkForPrisonGhost")
+        GUI.CreateMinimapMarker(GetPosition("ghostPrison").X,GetPosition("ghostPrison").Y,2)
     end
 
     StartBriefing(briefing)
@@ -989,6 +996,8 @@ function BriefingGhostImprisoned()
     ASP("Ari","Ari","Und damit rückst du erst jetzt raus? Na gut, besser spät als nie.",true)
 
     briefing.finished = function ()
+        ChangePlayer("Shagsworth",2)
+        ChangePlayer("Scoob",2)
         ResearchTechnology(Technologies.GT_Matchlock,1)
         GDB.SetString("Shagsworthquest","1")
     end
@@ -1068,7 +1077,7 @@ function BriefingArena()
             title = "Regar",
             text = "Wir verdienen hier gut, aber es geht nichts über einen guten Kampf. Schwarz und du können mir in der Arena beweisen, dass ihr auch nicht an Können nachgelassen habt. Wenn ihr gegen meine Leute gewinnt, helfen wir euch.",
             position = GetPosition("Regar"),
-            firstText = "Ihr habt doch eh keine Chance gegen uns Beide.",
+            firstText = "Du hast doch eh keine Chance gegen uns Beide.",
             secondText = "Ich hab keine Zeit für deine albernen Kämpfe.",
             firstSelected = 6,
             secondSelected = 8
@@ -1243,7 +1252,7 @@ function BriefingArena2()
     local page6 = AP()
     local page7 = AP {
         title = "Reagar",
-        text = "Im letzen Moment doch noch die Fliege machen, ich bin enttäuscht.",
+        text = "Im letzten Moment doch noch die Fliege machen, ich bin enttäuscht.",
         position = GetPosition("Regar"),
     }
     briefing.finished =
@@ -1371,7 +1380,7 @@ function BriefingMiner()
     local briefing = {};
     local AP,ASP = AddPages(briefing);
 
-    ASP("miner","Minenarbeiter","Alles Mist. Meine Jungs und ich können nicht arbeiten und das frustiert derbst.", true)
+    ASP("miner","Minenarbeiter","Alles Mist. Meine Jungs und ich können nicht arbeiten und das frustriert derbst.", true)
     ASP("Ari","Ari","Ich wäre bereit zu helfen, falls die Belohnung stimmt. Was gibt es?",true)
     ASP("claypit","Minenarbeiter","Unsere Minenanlage wurde in den Kämpfen zerstört und weil der Bürgermeister beschäftigt ist bekommen wir sie weder abgerissen, noch neugebaut. @cr Baut sie wieder auf damit wir endlich wieder was zu tun haben.")
     
@@ -1495,6 +1504,11 @@ function BriefingSturmbachAggression()
         text = "Wer hätte das denn ahnen können, nachdem Ihr euren Holzlieferanten so nett behandelt habt. Na gut, ich werde das Holz auftreiben. Den Leuten aus Winkelhain wird das zwar nicht gefallen aber was solls.",
         position = GetPosition("Ari")
     }
+    local page7 = AP {
+        title = "Ari",
+        text = "Jaja habt ja Recht. Aber ich kann Euch auch Etwas dafür anbieten. Ihr verfügt momentan über keinen Schießplatz, als Belohnung kann ich Euch die Pläne zukommen lassen.",
+        position = GetPosition("General")
+    }
 
     briefing.finished =
 		function()
@@ -1545,7 +1559,7 @@ function BriefingWoodWorker()
     }
 
     briefing.finished = function ()
-        AddWood(10000)
+        AddWood(10000 - (Difficulty * 2500))
     end
     StartBriefing(briefing)
 end
@@ -1576,7 +1590,7 @@ function BriefingIronMine()
     local AP = AddPages(briefing);
 
     local page1 = AP {
-        title = "Minenbesitzer",
+        title = "Garek der *Geizige*",
         text = "Habt ihr gehört? Im ganzen Königreich taucht plötzlich Silber auf. Ein winziger Brocken soll mehr wert sein als meine ganze Mine!",
         position = GetPosition("MineOwner")
     }
@@ -1586,7 +1600,7 @@ function BriefingIronMine()
         position = GetPosition("Ari")
     }
     local page3 = AP {
-        title = "Minenbesitzer",
+        title = "Garek der *Geizige*",
         text = "Natürlich! Dann müsste ich nie wieder arbeiten. Nehmt die Anlage gleich mit, solange ihr Silber bringt.",
         position = GetPosition("MineOwner"),
     }
@@ -1603,7 +1617,7 @@ function BriefingLighthouse()
     local AP = AddPages(briefing);
 
     local page1 = AP {
-        title = "Leuchtturmwärter",
+        title = "Leuchtturmwärter Siegbert",
         text = "Werte Dame, kann ich Euch um Hilfe bitten?",
         position = GetPosition("lighthouseNPC")
     }
@@ -1613,12 +1627,12 @@ function BriefingLighthouse()
         position = GetPosition("Ari")
     }
     local page3 = AP {
-        title = "Leuchtturmwärter",
+        title = "Leuchtturmwärter Siegbert",
         text = "Natürlich, in der jetzigen Lage kann das Lösen meines Problems sehr hilfreich sein. Auf einer Insel in der Nähe ist ein Goldvorkommen, bei dem gerade ein Minentrupp unterwegs ist. Momentan ist es aber zu gefährlich weiterzuarbeiten. Die Arbeiter sollten zurückkommen mit dem geborgenen Gold",
         position = GetPosition("lighthouseNPC")
     }
     local page4 = AP {
-        title = "Leuchtturmwärter",
+        title = "Leuchtturmwärter Siegbert",
         text = "Das Problem: Der Leuchtturm ist kaputt, das letzte Schiff weg. Ich kann weder reparieren noch ein Signal entzünden. Bitte helft, ein Zeichen zu setzen, sonst finden die Arbeiter nie zurück.",
         position = GetPosition("lighthouse"),
     }
@@ -1636,7 +1650,7 @@ function BriefingLighthouseSuccess()
     local AP = AddPages(briefing);
 
     local page1 = AP {
-        title = "Leuchtturmwärter",
+        title = "Leuchtturmwärter Siegbert",
         text = "Was tut Ihr da?! Mein schöner Leuchtturm… Nun, als Signal reicht es wohl. Eure Belohnung bekommt ihr, sobald die Arbeiter anlanden.",
         position = GetPosition("lighthouseNPC")
     }
@@ -1645,5 +1659,14 @@ function BriefingLighthouseSuccess()
         StartCountdown(300, getLighouseReward, false)
     end
 
+    StartBriefing(briefing);
+end
+
+function BriefingP3Scolar()
+    local briefing = {};
+    local AP,ASP = AddPages(briefing);
+
+    ASP("p3_Scolar","Heinrich Hammersmann","Ihr kommt aus Winkelhain richtig? @cr Eine Schande was unser Bürgermeister da angerichtet hat. @cr Wir einfachen Bürger waren nie für den Krieg. @cr Im Gegenteil Viele haben dort Familie, Ihr wisst schon wie das ist, wenn weit und breit nur eine Handvoll Dörfer stehen.", true)
+    ASP("p3_Scolar","Heinrich Hammersmann","Aber jetzt mal zu etwas Wichtigerem. @cr Weiter westlich vor der Brücke war einst ein Teil unserer Siedlung, durch die letzten Angriffe wurde er jedoch zerstört... @cr Ihr könnt euch dort sicherlich aufbauen, wenn ihr es schafft den Fluss zu verteidigen.",true)
     StartBriefing(briefing);
 end

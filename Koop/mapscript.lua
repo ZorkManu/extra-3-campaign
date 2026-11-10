@@ -138,6 +138,16 @@ function FirstMapAction()
 
 	UnlimitedArmy.ForceNoHook = true
 
+    BuyHeroWindow_Update_BuyHero_Backup = BuyHeroWindow_Update_BuyHero
+    function BuyHeroWindow_Update_BuyHero(_HeroEntityType)
+        if _HeroEntityType == Entities.CU_Evil_Queen or _HeroEntityType == Entities.PU_Hero14 then
+            XGUIEng.DisableButton( XGUIEng.GetCurrentWidgetID(), 1 )
+            return
+        end
+
+        BuyHeroWindow_Update_BuyHero_Backup(_HeroEntityType)
+    end
+
 	InitPlayerColorMapping()
     InitDiplomacy()
     InitWeatherGfxSets()
@@ -148,8 +158,18 @@ function FirstMapAction()
     CreateWoodPile("woodpile3",100000)
     CreateWoodPile("woodpile4",100000)
 
+    secondplayeractive = 0
+    thirdplayeractive = 0
     fithplayeractive = 0
     fourthplayeractive = 0
+
+    if XNetwork.GameInformation_IsHumanPlayerAttachedToPlayerID(2) == 1 then
+        secondplayeractive = 1
+    end
+
+    if XNetwork.GameInformation_IsHumanPlayerAttachedToPlayerID(3) == 1 then
+        thirdplayeractive = 1
+    end
 
     if XNetwork.GameInformation_IsHumanPlayerAttachedToPlayerID(4) == 1 then
         fourthplayeractive = 1
@@ -287,7 +307,7 @@ end
 function reeinforcements()
     DestroyEntity("ruinwall1")
     DestroyEntity("ruinwall2")
-    createMtnArmy()
+    --createMtnArmy()
     SPAWNEROFF = 1
     local bkplayer = 1
     local fortressplayer = 2

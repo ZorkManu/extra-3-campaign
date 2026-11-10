@@ -1,6 +1,17 @@
 TODO:
 - End/Startcutscene
-- Base ein wenig nach vorne wegen Kanonen
+- Onload Spielerfarben
+- AfraidEsotheric
+- Leibidauerspawn verringern
+
+"ready to test":
+- DZ Limit Deaktivieren
+- Rudger Leben nach Schwierigkeit
+- Linkes DZ mit Leibis aufbauen und dann leichte Pressure
+
+Ideen:
+- Schwarz Banditen Bogenschützen
+- Köderpuppe als Heldenfähigkeit
 
 Achieves:
 - Ohne Verstärkung

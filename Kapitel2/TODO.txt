@@ -1,0 +1,20 @@
+- Kerberos und Kala bleiben nicht richtig stehen
+- save and load farbe
+- Cutscenes
+- Kardinel loosecondition im Dungeon danach nicht mehr.
+- Kanonen aus der Army entfernen
+- herotargeting im crawler danach weniger
+
+TO TEST
+- Sidequest Spawner marker
+- TP Tower
+- Clean Up Waves
+
+Ideen
+- Gelb soll bei Evakuierung helfen
+- Quest für Kerberos Waffe
+
+Achieves
+- ALLE 3 Scharfis überleben
+- Bestimmte Zeit alle am Leben halten
+- Alle Eskorten gleichzeitig mit hoher Überlebensquote

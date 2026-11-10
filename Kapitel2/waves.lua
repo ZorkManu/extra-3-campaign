@@ -28,11 +28,7 @@ function BigWaves(_playerId)
         BigWave6()
         return
     end
-    if _playerId == 7 then
-        BigWave7()
-        return
-    end
-    
+
     local PatrolPoints = {}
     local patPos, nvSpawnPos, ghostSpawnPos
     if _playerId == 5 then
@@ -42,12 +38,19 @@ function BigWaves(_playerId)
         if IsDead("barracksp53") and IsDead("barracksp52") then
             patPos = GetPosition("alteaAttackPoint")
         end
-    else
+    elseif _playerId == 2 then
         patPos = GetPosition("FinsterwaldMiddle")
         nvSpawnPos = GetPosition("nvspawn4")
         ghostSpawnPos = GetPosition("graveyard24")
         if IsDead("p2chapel") and IsDead("p2wood2") and IsDead("p2wood1") and IsDead("p2iron1") then
             patPos = GetPosition("FinsterwaldInnerLeft")
+        end
+    else
+        nvSpawnPos = GetPosition("nvspawn1")
+        ghostSpawnPos = GetPosition("graveyard22")
+        patPos = GetPosition("attackPointP71")
+        if IsDead("defbuilding1") then
+            patPos = GetPosition("attackPointP72")
         end
     end
     PatrolPoints = {
@@ -76,12 +79,12 @@ function BigWaves(_playerId)
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
 
-    for j = 1, WAVE[_playerId]*Difficulty do
+    for j = 1, (WAVE[_playerId]*Difficulty)/3 do
         troopDescription.leaderType = getRandomGhostTroop()
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
 
-    for j = 1, WAVE[_playerId]+Difficulty do
+    for j = 1, (WAVE[_playerId]*Difficulty)/3 do
         troopDescription.leaderType = Entities.PU_LeaderSword4_Spectral
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
@@ -113,12 +116,12 @@ function BigWaves(_playerId)
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
 
-    for j = 1, math.max(1,WAVE[_playerId]) do
+    for j = 1, (math.max(1,WAVE[_playerId])+Difficulty)/5 do
         troopDescription.leaderType = getRandomNVTroop()
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
 
-    for i = 1, math.floor((Difficulty + WAVE[_playerId])/6) do
+    for i = 1, math.floor((Difficulty + WAVE[_playerId])/20) do
         CreateMilitaryGroup(4, Entities.CU_Evil_Troll1, 0, nvSpawnPos, "troll" .. CONST_ARMY_INDEX .. i)
         SetEntitySize(GetEntityId("troll" .. CONST_ARMY_INDEX .. i), 5)
         ConnectLeaderWithArmy(GetEntityId("troll".. CONST_ARMY_INDEX .. i),Armies[CONST_ARMY_INDEX])
@@ -128,7 +131,7 @@ function BigWaves(_playerId)
     Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyP".. _playerId .."Wave" , 1, {}, {CONST_ARMY_INDEX, 1})
     CONST_ARMY_INDEX = CONST_ARMY_INDEX + 1
     
-    for i = 1,math.floor((Difficulty + WAVE[_playerId])/6) do
+    for i = 1,math.floor((Difficulty + WAVE[_playerId])/10) do
         createNecro(_playerId)
     end
 end
@@ -169,12 +172,12 @@ function BigWave6()
         troopDescription.minNumberOfSoldiers = 1
         troopDescription.experiencePoints = HIGH_EXPERIENCE
     
-        for j = 1, WAVE[6]*Difficulty do
+        for j = 1, (math.max(1,WAVE[6])*Difficulty)/10 do
             troopDescription.leaderType = getRandomGhostTroop()
             EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
         end
     
-        for j = 1, WAVE[6]+Difficulty do
+        for j = 1, (math.max(1,WAVE[6])+Difficulty)/10 do
             troopDescription.leaderType = Entities.PU_LeaderSword4_Spectral
             EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
         end
@@ -206,12 +209,12 @@ function BigWave6()
         troopDescription.minNumberOfSoldiers = 1
         troopDescription.experiencePoints = HIGH_EXPERIENCE
     
-        for j = 1, math.max(1,WAVE[6]) do
+        for j = 1, math.max(1,(WAVE[6]*Difficulty)/8) do
             troopDescription.leaderType = getRandomNVTroop()
             EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
         end
     
-        for i = 1, math.floor((Difficulty + WAVE[6])/6) do
+        for i = 1, math.floor((Difficulty + WAVE[6])/40) do
             CreateMilitaryGroup(4, Entities.CU_Evil_Troll1, 0, nvSpawnPos, "troll" .. CONST_ARMY_INDEX .. i)
             SetEntitySize(GetEntityId("troll" .. CONST_ARMY_INDEX .. i), 5)
             ConnectLeaderWithArmy(GetEntityId("troll".. CONST_ARMY_INDEX .. i),Armies[CONST_ARMY_INDEX])
@@ -221,14 +224,10 @@ function BigWave6()
         Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyP6Wave" , 1, {}, {CONST_ARMY_INDEX, 1})
         CONST_ARMY_INDEX = CONST_ARMY_INDEX + 1
         
-        for i = 1,math.floor((Difficulty + WAVE[6])/6) do
+        for i = 1,math.floor((Difficulty + WAVE[6])/18) do
             createNecro(6)
         end
     end
-end
-
-function BigWave7()
-    
 end
 
 function createWaveBanditsAttack()
@@ -422,7 +421,7 @@ function createWaveP6()
         id = GetFirstFreeArmySlot(3),
         strength = 8,
         position = _posGhost,
-        rodeLength = 5000,
+        rodeLength = 10000,
         Patrol = {
             CurrentPosition = _posRedeploy,
             CurrentIndex = 0,
@@ -741,6 +740,137 @@ function controlArmyP7Wave(_id)
     Defend(Armies[_id])
 end
 
+function createLastWaves()
+    --createLastWave(1)
+    StartCountdown(60, function ()
+        createLastWave(2)
+    end)
+    --StartCountdown(120, function ()
+        --createLastWave(3)
+    --end)
+    StartCountdown(180, function ()
+        createLastWave(4)
+    end)
+    --StartCountdown(240, function ()
+        --createLastWave(5)
+    --end)
+    StartCountdown(300, function ()
+        createLastWave(6)
+    end)
+    --StartCountdown(360, function ()
+        --createLastWave(7)
+    --end)
+    StartCountdown(420, function ()
+        createLastWave(8)
+    end)
+    StartCountdown(480, function ()
+        createLastWave(9)
+    end)
+    --StartCountdown(540, function ()
+        --createLastWave(10)
+    --end)
+end
+
+function createLastWave(_wave)
+    local ghostPos, nvPos, ghostAmount, nvAmount, ghostSwordAmount, advancePos
+    local necroAmount = 0
+    local trollAmount = 0
+    for i =  1, 3 do
+        if i == 1 then
+            ghostPos = "grave13"
+            nvPos = "mountainpassCave"
+            advancePos = "p6cavspawn"
+        elseif i == 2 then
+            ghostPos  = "grave1"
+            advancePos = "fleeingsp7"
+        else
+            ghostPos = "graveyard22"
+            nvPos = "nvspawn1"
+            necroAmount = math.floor(_wave/(gvDiffLVL*2))
+            advancePos = "p7barrackspawn"
+        end
+        ghostAmount = 6 + (Difficulty+_wave)
+        nvAmount = (Difficulty+_wave)/2
+        ghostSwordAmount = (Difficulty + _wave)/2
+        if _wave > 7 then
+            if i ~= 2 then
+                trollAmount = Difficulty - 1
+            end
+        end
+        Armies[CONST_ARMY_INDEX] = {
+            player = 3,
+            id = GetFirstFreeArmySlot(3),
+            strength = 8,
+            position = GetPosition(ghostPos),
+            rodeLength = 5000
+        }
+
+        SetupArmy(Armies[CONST_ARMY_INDEX])
+
+        local troopDescription = {}
+        troopDescription.maxNumberOfSoldiers = 12
+        troopDescription.minNumberOfSoldiers = 1
+        troopDescription.experiencePoints = HIGH_EXPERIENCE
+
+        for j = 1, ghostAmount do
+            troopDescription.leaderType = getRandomGhostTroop()
+            EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
+        end
+
+        troopDescription.leaderType = Entities.PU_LeaderSword4_Spectral
+        for j = 1, ghostSwordAmount do
+            EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
+        end
+
+        Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyAdvanceWaves" , 1, {}, {CONST_ARMY_INDEX})
+        Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "lastWaveRedeploy", 1, {}, {CONST_ARMY_INDEX,advancePos})
+        CONST_ARMY_INDEX = CONST_ARMY_INDEX + 1
+
+        if i ~= 2 then
+            Armies[CONST_ARMY_INDEX] = {
+                player = 4,
+                id = GetFirstFreeArmySlot(4),
+                strength = 8,
+                position = GetPosition(nvPos),
+                rodeLength = 5000
+            }
+
+            SetupArmy(Armies[CONST_ARMY_INDEX])
+
+            local troopDescription = {}
+            troopDescription.maxNumberOfSoldiers = 20
+            troopDescription.minNumberOfSoldiers = 1
+            troopDescription.experiencePoints = HIGH_EXPERIENCE
+
+            for j = 1, nvAmount do
+                troopDescription.leaderType = getRandomNVTroop()
+                EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
+            end
+
+            for j = 1, trollAmount do
+                CreateMilitaryGroup(4, Entities.CU_Evil_Troll1, 0, GetPosition(nvPos), "troll" .. CONST_ARMY_INDEX .. i)
+                SetEntitySize(GetEntityId("troll" .. CONST_ARMY_INDEX .. i), 5)
+                ConnectLeaderWithArmy(GetEntityId("troll".. CONST_ARMY_INDEX .. i),Armies[CONST_ARMY_INDEX])
+            end
+
+            Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyAdvanceWaves" , 1, {}, {CONST_ARMY_INDEX})
+            Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "lastWaveRedeploy", 1, {}, {CONST_ARMY_INDEX,advancePos})
+            CONST_ARMY_INDEX = CONST_ARMY_INDEX + 1
+        end
+
+        for j = 1, necroAmount do
+            createNecro(7)
+        end
+    end
+end
+
+function lastWaveRedeploy(_id,_pos)
+    if HOLDOUT == true then
+        Redeploy(Armies[_id],GetPosition(_pos))
+        return true
+    end
+end
+
 function controlArmyAdvanceBandits(_id)
     if IsDead(Armies[_id]) then
         if IsDead("spawnerBanditAttack") == false then
@@ -780,20 +910,17 @@ function createNecro(_playerId)
     CreateMilitaryGroup(4,Entities.CU_Evil_Queen,0,GetPosition(pos), "necro" .. necroId)
     NECROPOS[necroId] = PLAYERWAYPOINTS[_playerId][math.random(table.getn(PLAYERWAYPOINTS[_playerId]))]
     Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlNecro" , 1, {}, {_playerId,necroId})
-    StartCountdown(1, function ()
-        local id = GetEntityId("necro" .. necroId)
-        Logic.SetEntityScriptingValue(id,72,1)
-        CUtil.SetEntityDisplayName(id, "Nekromant")
-    end, false)
+    local id = GetEntityId("necro" .. necroId)
+    CUtil.SetEntityDisplayName(id, "Nekromant")
 end
 
 function controlNecro(_pId, _necroId)
     local name = "necro" .. _necroId
-    if IsDead(name) then
+    if IsDead(name) or VILLAGESTATUS[_pId] == 3 then
         Logic.DestroyEntity(GetEntityId(name))
         return true
     end
-    if AreEnemiesInArea(7,GetPosition(name),600) then
+    if AreEnemiesInArea(7,GetPosition(name),500) then
         UseNecroAbility(name)
         if UseNecroAbility(name) == true then
             return false
@@ -803,4 +930,11 @@ function controlNecro(_pId, _necroId)
         NECROPOS[_necroId] = PLAYERWAYPOINTS[_pId][math.random(table.getn(PLAYERWAYPOINTS[_pId]))]
     end
     Move(name,GetPosition(NECROPOS[_necroId]))
+end
+
+function controlArmyAdvanceWaves(_id)
+    if IsDead(Armies[_id]) or HOLDOUT == true then
+        return true
+    end
+    Advance(Armies[_id])
 end

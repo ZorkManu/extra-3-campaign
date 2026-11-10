@@ -1,0 +1,14 @@
+- QuestLog
+- Cutscenes
+
+Ideen:
+- Zeitlimit durch Potentiellen Angriff der Pinken
+
+To Test:
+- mehr nv in der Nebelvolkbase Defrange erhöhung
+- Bootsquest nur am Tag
+
+Achieves:
+- NV zerstören ohne einen Geisterspawner kaputt gemacht zu haben
+- Inseldz eine Zeit lang halten
+- Irgendwas mit Aufstand

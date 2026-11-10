@@ -7,6 +7,7 @@ REEINFORCEMENTSARRIVED = false
 STURMBACHALLIED = false
 SCHWARZ_LIFE = 3
 VCCAPTURED = false
+ATTACK_ENDED = false
 
 function firstQuest()
     BriefingStart()
@@ -165,6 +166,8 @@ end
 function checkForSturmbachAttacker()
     if Counter.Tick2("checkForUnknownAttacker", 10) then
         if IsDead(attackArmy[1]) and IsDead(attackArmy[2]) then
+            Redeploy(MapEditor_Armies[3],GetPosition("BaseSturmbach2"),nil,"offensiveArmies")
+            Redeploy(MapEditor_Armies[3],GetPosition("BaseSturmbach2"),nil,"defensiveArmies")
             SetNeutral(1,3)
             SetNeutral(2,3)
             SetNeutral(3,2)
@@ -181,6 +184,11 @@ end
 function checkForUnknownAttacker()
     if Counter.Tick2("checkForUnknownAttacker", 10) then
         if IsDead(armyNV) and IsDead(armyUnknown) and IsDead(attackArmy[1]) and IsDead(attackArmy[2]) then
+            ATTACK_ENDED = true
+            DestroyEntity(GetEntityId("villager2"))
+            if SHAGTALKED then
+                StartSimpleJob("moveShagsworthQuest")
+            end
             SetFriendly(1,2)
             BriefingPostAttack()
             return true
@@ -231,6 +239,7 @@ function finishSturmbachQuest()
     initSturmbachAggressionQuest()
     intiIronMineQuest()
     initLightHouseQuest()
+    initSturmbachNPCs()
 end
 
 function questReeinforcements()
@@ -255,6 +264,7 @@ function messengerArrival()
     if IsNear("Rudger", "scoutGate", 100) then
         ChangePlayer(GetEntityId("Rudger"), 1)
         BriefingMountains()
+        MakeVulnerable(GetEntityId("Rudger"))
         return true
     end
 end
@@ -262,11 +272,11 @@ end
 function reeinforcementsMercius()
     CreateMilitaryGroup(1, Entities.PU_Hero2, 0, GetPosition("reeinfPilgrim"), "Pilgrim")
     CreateMilitaryGroup(1, Entities.PU_Scout, 0, GetPosition("reeinfScout"))
-    CreateMilitaryGroup(2, Entities.PU_LeaderCavalry2, 0, GetPosition("reeinfRudger"), "Rudger")
-    StartCountdown(1, function ()
-        Logic.SetEntityScriptingValue(GetEntityId("Rudger"),72,1)
-        CUtil.SetEntityDisplayName(GetEntityId("Rudger"), "Rudger")
-    end, false)
+    CreateMilitaryGroup(1, Entities.PU_LeaderCavalry2, 0, GetPosition("reeinfRudger"), "Rudger")
+    --Logic.SetEntityScriptingValue(GetEntityId("Rudger"),72,1)
+    CUtil.SetEntityDisplayName(GetEntityId("Rudger"), "Rudger")
+    --CEntity.SetMaxHealth(GetEntityId("Rudger"),800 - Difficulty * 200)
+	--SetHealth("Rudger", 100)
     for i = 1, 5 do
         CreateMilitaryGroup(1, Entities.PV_Cannon2, 0, GetPosition("reeinf1" .. i))
     end
@@ -296,8 +306,24 @@ end
 
 function checkForAbandonedVillage()
     if VCCAPTURED == true then
-        Message("Seht nur ein verlassenes Dorfzentrum, lasst es uns besetzen.")
         ChangePlayer("abandonedVillage",1)
+        Message("Pilgrim: Seht nur ein verlassenes Dorfzentrum, lasst es uns besetzen.")
+        StartCountdown(4,function ()
+            CreateMilitaryGroup(1, Entities.PU_Serf, 0, GetPosition("serfspawnabandoned"), "Roland")
+            Move("Roland","serfmovepoint")
+            Message("Arbeiter Roland: Endlich sind wir frei!!!")
+        end,false)
+        StartCountdown(9,function ()
+            Message("Arbeiter Roland: Yippieh!!!!!")
+            Sound.PlayGUISound( Sounds.Misc_Chat2 , 100 )
+        end,false)
+        StartCountdown(13, function ()
+            CreateMilitaryGroup(1, Entities.PU_Serf, 0, GetPosition("serfspawnabandoned"), "Georg")
+            Message("Arbeiter Georg: Du Klappspaten! Siehste nicht was du angerichtet hast? Die haben uns gehört! Jetzt ist unser Versteck hinne!")
+        end, false)
+        StartCountdown(17, function ()
+            initVCAttacker()
+        end, false)
         return true
     end
 end
@@ -324,7 +350,8 @@ function victoryCheck()
     DestroyEntity(GetEntityId("Schwarz"))
 
     CreateMilitaryGroup(1, Entities.PU_Hero5, 0, GetPosition("AriEnd"), "Ari")
-    CreateMilitaryGroup(1, Entities.CU_VeteranCaptain, 0, GetPosition("SchwarzEnd"), "Schwarz")
+    CreateMilitaryGroup(1, Entities.PU_Hero_Bandit, 0, GetPosition("SchwarzEnd"), "Schwarz")
+    CUtil.SetEntityDisplayName(GetEntityId("Schwarz"), "Schwarz")
 
     LookAt("Ari", "Schwarz")
     LookAt("Schwarz", "Ari")
@@ -366,18 +393,16 @@ end
 
 function checkForSchwarz()
     if IsDead("Schwarz") and not ARENA_OCCUPIED then
-        if SCHWARZ_LIFE > 0 then
-            SCHWARZ_LIFE = SCHWARZ_LIFE - 1
-            Message("Schwarz ist im Kampf verletzt worden. Er hat noch " .. SCHWARZ_LIFE .. " Leben")
-            CreateMilitaryGroup(1, Entities.CU_VeteranCaptain, 0, GetPosition("banditAmbush"), "Schwarz")
-            StartCountdown(1, function ()
-                Logic.SetEntityScriptingValue(GetEntityId("Schwarz"),72,1)
-			    CUtil.SetEntityDisplayName(GetEntityId("Schwarz"), "Schwarz")
-            end, false)
+        --if SCHWARZ_LIFE > 0 then
+            --SCHWARZ_LIFE = SCHWARZ_LIFE - 1
+            --Message("Schwarz ist im Kampf verletzt worden. Er hat noch " .. SCHWARZ_LIFE .. " Leben")
+            CreateMilitaryGroup(1, Entities.PU_Hero_Bandit, 0, GetPosition("banditAmbush"), "Schwarz")
+            --Logic.SetEntityScriptingValue(GetEntityId("Schwarz"),72,1)
+			CUtil.SetEntityDisplayName(GetEntityId("Schwarz"), "Schwarz")
             return
-        end
-        Message("Schwarz ist im Kampf gefallen!")
-        Defeat()
+        --end
+       -- Message("Schwarz ist im Kampf gefallen!")
+       -- Defeat()
     end
 end
 

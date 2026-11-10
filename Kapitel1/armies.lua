@@ -3,6 +3,8 @@ CONST_ARMY_INDEX = 0
 ATTACKER_KILLED = 0
 GHOST_SPAWNER_TIMER = 0
 GHOSTHQ1DEAD = false
+GhostArmies = {}
+Ghosttypes = {{Entities.PU_LeaderSword1_Spectral,4},{Entities.PU_LeaderPoleArm1_Spectral,4},{Entities.PU_LeaderBow1_Spectral,4},{Entities.PU_LeaderRifle1_Spectral,3}}
 
 function createArmyMine()
     for i = 1, 3 do
@@ -116,14 +118,12 @@ function initGhostAttackIsland(_id)
     SetupArmy(Armies[CONST_ARMY_INDEX])
         
     local troopDescription = {}
-    troopDescription.maxNumberOfSoldiers = 12
+    troopDescription.maxNumberOfSoldiers = 15 - gvDiffLVL*2
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
     troopDescription.leaderType = Entities.PU_LeaderSword4_Spectral
         
-    for j = 1, Difficulty do
-        EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
-    end
+    EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
         
     Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyGhostAdvanceIsland" , 1, {}, {CONST_ARMY_INDEX, _id})
     CONST_ARMY_INDEX = CONST_ARMY_INDEX + 1
@@ -132,48 +132,14 @@ end
 function controlArmyGhostAdvanceIsland(_id, _spawnId)
     if IsDead(Armies[_id]) then
         if Counter.Tick2("ghostrespawnislandattack".._spawnId,60) then
-            initGhostAttackIsland(_spawnId)
+            if DAYORNIGHT == "night" then
+                initGhostAttackIsland(_spawnId)
+            end
             return true
         end
         return false
     end
     Advance(Armies[_id])
-end
-
-function initGhostDefendIsland(_id)
-    Armies[CONST_ARMY_INDEX] = {
-        player = 3,
-        id = GetFirstFreeArmySlot(3),
-        strength = 8,
-        position = GetPosition("ghostreeinf" .. _id),
-        rodeLength = 8000
-    }
-        
-    SetupArmy(Armies[CONST_ARMY_INDEX])
-        
-    local troopDescription = {}
-    troopDescription.maxNumberOfSoldiers = 12
-    troopDescription.minNumberOfSoldiers = 1
-    troopDescription.experiencePoints = HIGH_EXPERIENCE
-    troopDescription.leaderType = Entities.PU_LeaderSword4_Spectral
-        
-    for j = 1, Difficulty + 4 do
-        EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
-    end
-        
-    Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyGhostDefenseIsland" , 1, {}, {CONST_ARMY_INDEX, _id})
-    CONST_ARMY_INDEX = CONST_ARMY_INDEX + 1
-end
-
-function controlArmyGhostDefenseIsland(_id, _spawnId)
-    if IsDead(Armies[_id]) then
-        if Counter.Tick2("ghostrespawnislanddefense".._spawnId,1200) then
-            initGhostDefendIsland(_spawnId)
-            return true
-        end
-        return false
-    end
-    Defend(Armies[_id])
 end
 
 
@@ -255,12 +221,10 @@ function createTownDefender()
 end
 
 function controlYuki()
-    if Counter.Tick2("controlYuki",10) then
-        if IsDead(ARMYYUKI) then
-            return true
-        end
-        Advance(ARMYYUKI)
+    if IsDead(ARMYYUKI) then
+        return true
     end
+    Advance(ARMYYUKI)
 end
 
 function initEnemyDefenderArmies()
@@ -269,21 +233,14 @@ function initEnemyDefenderArmies()
     initGhostDefenseSpawner(1)
     initGhostDefenseSpawner(2)
     initNVDefenseSpawner(1, "nv1")
-    for i = 1, 6 do
-        initGhostDefendIsland(i)
-    end
 end
 
 function initGhostDefenseSpawner(_id)
-    if IsDead("ghosthq1") then
-        GHOSTHQ1DEAD = true
-        return true
-    end
     Armies[CONST_ARMY_INDEX] = {
-        player = 3,
-        id = GetFirstFreeArmySlot(3),
+        player = 6,
+        id = GetFirstFreeArmySlot(6),
         strength = 8,
-        position = GetPosition("gspawn" .. _id),
+        position = GetPosition("gdefspawn" .. _id),
         rodeLength = 4000
     }
         
@@ -293,15 +250,21 @@ function initGhostDefenseSpawner(_id)
     troopDescription.maxNumberOfSoldiers = 8
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
+    troopDescription.leaderType = Entities.PU_LeaderPoleArm3
 
-    local amount = Difficulty*2 + 6
+    local amount = Difficulty*2
         
     for j = 1, amount do
-        troopDescription.leaderType = getRandomGhostTroop()
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
-        
-    Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyGhostDefenseSpawner" , 1, {}, {CONST_ARMY_INDEX, _id})
+
+    troopDescription.leaderType = Entities.PU_LeaderBow3
+
+    for j = 1, amount do
+        EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
+    end
+
+    Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyDefend" , 1, {}, {CONST_ARMY_INDEX, _id})
     CONST_ARMY_INDEX = CONST_ARMY_INDEX + 1
 end
 
@@ -325,7 +288,7 @@ function initNVDefenseSpawner(_id, _spawner)
         id = GetFirstFreeArmySlot(5),
         strength = 8,
         position = GetPosition("nvspawn" .. _id),
-        rodeLength = 3000
+        rodeLength = 5000
     }
         
     SetupArmy(Armies[CONST_ARMY_INDEX])
@@ -335,7 +298,7 @@ function initNVDefenseSpawner(_id, _spawner)
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
         
-    for j = 1, Difficulty do
+    for j = 1, Difficulty * 3 do
         troopDescription.leaderType = getRandomNVTroop()
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
@@ -346,7 +309,7 @@ end
 
 function controlArmyNVDefenseSpawner(_id, _spawnId, _spawner)
     if IsDead(Armies[_id]) then
-        if Counter.Tick2("nvrespawn".._spawner,60) then
+        if Counter.Tick2("nvrespawn".._spawner,30) then
             initNVDefenseSpawner(_spawnId, _spawner)
             return true
         end
@@ -357,11 +320,11 @@ end
 
 function createOneTimeGhostDefender()
     Armies[CONST_ARMY_INDEX] = {
-        player = 3,
-        id = GetFirstFreeArmySlot(3),
+        player = 6,
+        id = GetFirstFreeArmySlot(6),
         strength = 8,
         position = GetPosition("oneTimeDef1"),
-        rodeLength = 2800
+        rodeLength = 4000
     }
         
     SetupArmy(Armies[CONST_ARMY_INDEX])
@@ -370,9 +333,15 @@ function createOneTimeGhostDefender()
     troopDescription.maxNumberOfSoldiers = 8
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
-        
-    for j = 1, Difficulty*4 + 10 do
-        troopDescription.leaderType = getRandomGhostTroop()
+    troopDescription.leaderType = Entities.PU_LeaderPoleArm3
+
+    for j = 1, Difficulty do
+        EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
+    end
+
+    troopDescription.leaderType = Entities.PU_LeaderBow3
+
+    for j = 1, Difficulty do
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
         
@@ -431,20 +400,21 @@ function createOneTimeGhostAttacker()
 end
 
 function initPlayerThreeAndFourSpawner()
-    for i = 1, 7 do
+    for i = 1, 10 do
         initGhostAttackSpawner(i, "g" .. i)
     end
+    initGhostHQSpawner()
 end
 
 function initGhostAttackSpawner(_id, _spawner)
     local pid = 4
-    if _id > 4 then
+    if _id > 4 and _id < 8 then
         pid = 3
     end
-    if IsDead(_spawner) then
+    if IsDead(_spawner) or DAYORNIGHT == "day" then
         return true
     end
-    Armies[CONST_ARMY_INDEX] = {
+    GhostArmies[_spawner] = {
         player = pid,
         id = GetFirstFreeArmySlot(pid),
         strength = 8,
@@ -452,42 +422,79 @@ function initGhostAttackSpawner(_id, _spawner)
         rodeLength = 10000
     }
         
-    SetupArmy(Armies[CONST_ARMY_INDEX])
+    SetupArmy(GhostArmies[_spawner])
         
     local troopDescription = {}
     troopDescription.maxNumberOfSoldiers = 8
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
 
-    local amount = Difficulty*2 + 2
-    if pid == 3 then
-        amount = Difficulty*2
+    local amount = Difficulty
+    if Modulo(_id,2) == 0 then
+        amount = amount - 1
     end
-    amount = amount + GHOST_SPAWNER_TIMER/9*gvDiffLVL
+    if amount == 0 then
+        return true
+    end
+
+    amount = amount + math.ceil(GHOST_SPAWNER_TIMER/9*gvDiffLVL)
+    if pid == 3 then
+        amount = Difficulty
+    end
         
     for j = 1, amount do
         troopDescription.leaderType = getRandomGhostTroop()
-        EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
+        EnlargeArmy(GhostArmies[_spawner], troopDescription)
     end
         
-    Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyGhostAdvanceSpawner" , 1, {}, {CONST_ARMY_INDEX, _id, _spawner})
-    CONST_ARMY_INDEX = CONST_ARMY_INDEX + 1
+    Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyGhostAdvanceSpawner" , 1, {}, { _id, _spawner})
 end
 
-function controlArmyGhostAdvanceSpawner(_id, _spawnId, _spawner)
-    if IsDead(Armies[_id]) then
-        if Counter.Tick2("ghostrespawn".._spawner,240) then
-            initGhostAttackSpawner(_spawnId, _spawner)
-            return true
-        end
-        return false
+function initGhostHQSpawner()
+
+    if IsDead("ghosthq1") or DAYORNIGHT == "day" then
+        return true
     end
-    Advance(Armies[_id])
+    GhostArmies["ghosthq1"] = {
+        player = 4,
+        id = GetFirstFreeArmySlot(4),
+        strength = 8,
+        position = GetPosition("ghqspawn1"),
+        rodeLength = 10000
+    }
+        
+    SetupArmy(GhostArmies["ghosthq1"])
+        
+    local troopDescription = {}
+    troopDescription.maxNumberOfSoldiers = 15 - gvDiffLVL * 3
+    troopDescription.minNumberOfSoldiers = 1
+    troopDescription.experiencePoints = HIGH_EXPERIENCE
+    
+    troopDescription.leaderType = Entities.PU_LeaderSword4_Spectral
+    EnlargeArmy(GhostArmies["ghosthq1"], troopDescription)
+        
+    Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyGhostAdvanceSpawner" , 1, {}, { "ghosthq1", "ghosthq1"})
+end
+
+function controlArmyGhostAdvanceSpawner(_spawnId, _spawner)
+    if IsDead(GhostArmies[_spawner]) then
+        if DAYORNIGHT == "night" then
+            if _spawnId == "ghosthq1" then
+                initGhostHQSpawner()
+            else
+                initGhostAttackSpawner(_spawnId,_spawner)
+            end
+        end
+        return true
+    end
+    Advance(GhostArmies[_spawner])
 end
 
 function initPlayerFiveSpawner()
-    for i = 2, 5 do
+    for i = 2, 3 do
         initNVAttackSpawner(i, "nv" .. i)
+    end
+    for i = 2, 9 do
         initNVDefenseSpawner(i, "nv" .. i)
     end
 end
@@ -551,7 +558,7 @@ function summonFirstWave()
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
         
-    for j = 1, Difficulty*2 +1 do
+    for j = 1, Difficulty*2 do
         troopDescription.leaderType = getRandomNVTroop()
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
@@ -581,7 +588,7 @@ function summonSecondWave()
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
         
-    for j = 1, Difficulty*2 + 3 do
+    for j = 1, Difficulty*2 + 1 do
         troopDescription.leaderType = getRandomNVTroop()
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
@@ -611,7 +618,7 @@ function summonThirdWave()
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
         
-    for j = 1, Difficulty*3 +1 do
+    for j = 1, Difficulty*3 do
         troopDescription.leaderType = getRandomNVTroop()
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
@@ -641,7 +648,7 @@ function summonFourthWave()
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
         
-    for j = 1, Difficulty*3 +5 do
+    for j = 1, Difficulty*3 +3 do
         troopDescription.leaderType = getRandomNVTroop()
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
@@ -671,7 +678,7 @@ function summonFifthWave()
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
         
-    for j = 1, Difficulty*3 +4 do
+    for j = 1, Difficulty*3 +2 do
         troopDescription.leaderType = getRandomNVTroop()
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
@@ -701,7 +708,7 @@ function summonSixthWave()
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
         
-    for j = 1, Difficulty*3 +8 do
+    for j = 1, Difficulty*3 +5 do
         troopDescription.leaderType = getRandomNVTroop()
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
@@ -734,7 +741,7 @@ function summonSeventhWave()
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
         
-    for j = 1, Difficulty*3 +9 do
+    for j = 1, Difficulty*3 +7 do
         troopDescription.leaderType = getRandomNVTroop()
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
@@ -769,7 +776,7 @@ function summonEighthWave()
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
         
-    for j = 1, Difficulty*4 +3 do
+    for j = 1, Difficulty*4 +1 do
         troopDescription.leaderType = getRandomNVTroop()
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
@@ -824,7 +831,7 @@ function summonTenthWave()
     troopDescription.minNumberOfSoldiers = 1
     troopDescription.experiencePoints = HIGH_EXPERIENCE
         
-    for j = 1, Difficulty*4 +8 do
+    for j = 1, Difficulty*4 +5 do
         troopDescription.leaderType = getRandomNVTroop()
         EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
     end
@@ -836,6 +843,33 @@ function summonTenthWave()
         
     Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyAdvance" , 1, {}, {CONST_ARMY_INDEX})
     CONST_ARMY_INDEX = CONST_ARMY_INDEX + 1
+end
+
+function createArmyUprising()
+    for i  = 1, 2 do
+        Armies[CONST_ARMY_INDEX] = {
+            player = 6,
+            id = GetFirstFreeArmySlot(6),
+            strength = 8,
+            position = GetPosition("armySpawnUprising" .. i),
+            rodeLength = 10000
+        }
+        
+        SetupArmy(Armies[CONST_ARMY_INDEX])
+        
+        local troopDescription = {}
+        troopDescription.maxNumberOfSoldiers = 4
+        troopDescription.minNumberOfSoldiers = 1
+        troopDescription.experiencePoints = HIGH_EXPERIENCE
+        
+        troopDescription.leaderType = Entities["PU_LeaderPoleArm" .. Difficulty]
+        for j = 1, 5 do
+           EnlargeArmy(Armies[CONST_ARMY_INDEX], troopDescription)
+        end
+        
+        Trigger.RequestTrigger(Events.LOGIC_EVENT_EVERY_SECOND, "", "controlArmyAdvance" , 1, {}, {CONST_ARMY_INDEX})
+        CONST_ARMY_INDEX = CONST_ARMY_INDEX + 1
+    end
 end
 
 function controlArmyAdvance(_id)
@@ -876,14 +910,10 @@ end
 
 function getRandomNVTroop()
     local randomGenerator = math.random()
-    if randomGenerator < 0.25 then
+    if randomGenerator < 0.5 then
         return Entities.CU_Evil_LeaderBearman1
-    elseif randomGenerator < 0.50 then
-        return Entities.CU_Evil_LeaderCavalry1
-    elseif randomGenerator < 0.75 then
-        return Entities.CU_Evil_LeaderSkirmisher1
     else
-        return Entities.CU_Evil_LeaderSpearman1
+        return Entities.CU_Evil_LeaderSkirmisher1
     end
 end
 
